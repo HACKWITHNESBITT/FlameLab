@@ -1,4 +1,4 @@
-# Extraction template and procedure (Dev 1)
+# Extraction template and procedure
 
 ## Order of work
 

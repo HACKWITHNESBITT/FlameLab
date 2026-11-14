@@ -44,6 +44,7 @@ Operations guide for running, checking and releasing FlameLab. Stack: see `TECHN
 | 429 from SI endpoints | Rate limiting | Wait and retry; check client call volume |
 | 422 when loading a record | Schema validation failure | Run validation, then fix the record (not the schema) unless the schema itself is wrong |
 | Scores look wrong | Config or data change | Check `weights.yaml` and `environments.yaml`, then run the golden tests |
+| Scores suspected wrong, rollback needed | Scoring engine | Set `FLAMELAB_SCORING_ENABLED=off` and restart: `/api/rank` returns 503 while data endpoints keep working |
 | SI text missing | Verifier failed closed | This is intended. Check the audit log for the failed citation and fix the record or prompt |
 | A range shows as zero | Bug | Missing values must be `null` with `status: missing`; fix the loader or record |
 

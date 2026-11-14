@@ -183,6 +183,15 @@ def list_investigations(db_path: Path, *, hardware=None, fuel_class=None, pillar
     return out[offset:offset + limit]
 
 
+def all_records(db_path: Path) -> list[dict]:
+    con = _connect(db_path)
+    try:
+        rows = con.execute("SELECT full_json FROM investigations ORDER BY id").fetchall()
+    finally:
+        con.close()
+    return [json.loads(r["full_json"]) for r in rows]
+
+
 def get_investigation(db_path: Path, inv_id: str) -> dict | None:
     con = _connect(db_path)
     try:
