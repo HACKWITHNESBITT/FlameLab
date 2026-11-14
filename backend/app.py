@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import os
 import json
 from pathlib import Path
 from typing import Any
@@ -20,11 +21,39 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from backend import store
+from si import provider as si_provider
+from si import retrieval, verifier
 
 ROOT = Path(__file__).resolve().parent
 RECORDS = ROOT.parent / "data" / "records"
 DB_PATH = ROOT / "flamelab.db"
 VERSION = "v0.2.0-loader"
+SI_LOG = Path(os.getenv("FLAMELAB_SI_LOG", str(ROOT.parent / "si" / "audit.log")))
+
+
+def _audit(entry: dict):
+    try:
+        with open(SI_LOG, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except OSError:
+        pass  # audit logging must never break a response
+
+
+def _get_record(rid: str):
+    return store.get_investigation(DB_PATH, rid)
+
+
+def _verify_items(items) -> tuple[list, bool]:
+    out, ok = [], True
+    for it in items or []:
+        text = it.get("text", "") if isinstance(it, dict) else str(it)
+        v = verifier.verify_text(text, _get_record)
+        if v["passed"] and v["text"]:
+            cites = sorted(f"rec:{r}#{p}" for r, p in verifier.parse_citations(v["text"]))
+            out.append({"text": v["text"], "citations": cites})
+        else:
+            ok = False
+    return out, ok
 
 
 def _load_yaml(name: str) -> dict:
@@ -222,18 +251,94 @@ def gaps(environment: str = "moon_base"):
 
 
 @app.get("/api/si/summary/{inv_id}")
-def si_summary(inv_id: str, environment: str = "moon_base") -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+def si_summary(inv_id: str, environment: str = "moon_base"):
+    rec = store.get_investigation(DB_PATH, inv_id)
+    if rec is None:
+        return err("unknown_id", f"Unknown investigation: {inv_id}", 404)
+    env = _env_or_none(environment)
+    if env is None:
+        return err("unknown_environment", f"Unknown environment: {environment}", 400)
+    try:
+        out = si_provider.generate("summary", {"record": rec, "environment": env},
+                                   json_keys=("findings", "interpretation", "gaps"))
+    except si_provider.NoProviderError:
+        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+    findings, ok_f = _verify_items(out.get("findings"))
+    interp, ok_i = _verify_items(out.get("interpretation"))
+    passed = ok_f and ok_i and bool(findings)
+    _audit({"endpoint": "si/summary", "id": inv_id, "environment": environment,
+            "sources": sorted({c for it in findings + interp for c in it["citations"]}),
+            "passed": passed})
+    return {"id": inv_id, "findings": findings, "interpretation": interp,
+            "gaps": out.get("gaps", []), "verification": {"passed": passed}}
 
 
 @app.post("/api/si/compare")
-def si_compare(payload: dict) -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+def si_compare(payload: dict):
+    ids = payload.get("ids", []) or []
+    environment = payload.get("environment", "moon_base")
+    if len(ids) not in (2, 3) or len(set(ids)) != len(ids):
+        return err("invalid_ids", "Provide two or three distinct ids", 400)
+    recs = []
+    for i in ids:
+        rec = store.get_investigation(DB_PATH, i)
+        if rec is None:
+            return err("unknown_id", f"Unknown id: {i}", 404)
+        recs.append(rec)
+    env = _env_or_none(environment)
+    if env is None:
+        return err("unknown_environment", f"Unknown environment: {environment}", 400)
+    try:
+        out = si_provider.generate("comparison", {"records": recs, "environment": env},
+                                   json_keys=("similarities", "differences"))
+    except si_provider.NoProviderError:
+        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+    sims, ok_s = _verify_items(out.get("similarities"))
+    diffs, ok_d = _verify_items(out.get("differences"))
+    passed = ok_s and ok_d and bool(sims or diffs)
+    _audit({"endpoint": "si/compare", "ids": ids, "environment": environment, "passed": passed})
+    return {"ids": ids, "environment": environment, "similarities": sims,
+            "differences": diffs, "verification": {"passed": passed}}
 
 
 @app.post("/api/ask")
-def ask(payload: dict) -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+def ask(payload: dict):
+    question = (payload.get("question") or "").strip()
+    if not question:
+        return err("invalid_question", "Provide a question", 400)
+    roster = store.list_investigations(DB_PATH, limit=1000)
+    recs = [store.get_investigation(DB_PATH, r["id"]) for r in roster]
+    retrieved = retrieval.retrieve(question, recs)
+    cov = retrieval.coverage(question, retrieved)
+    if cov["kind"] == "procedure":
+        _audit({"endpoint": "ask", "question": question, "passed": True, "kind": "procedure"})
+        return {"answer": "I can't provide crew procedures. For operational fire response, "
+                          "consult mission safety authorities; I can share research context instead.",
+                "citations": [], "covered": False, "missing": cov["missing"],
+                "verification": {"passed": True}}
+    if not cov["covered"]:
+        _audit({"endpoint": "ask", "question": question, "passed": True, "kind": cov["kind"]})
+        return {"answer": "This question is not covered by the available data: "
+                          + "; ".join(cov["missing"]) + ".",
+                "citations": [], "covered": False, "missing": cov["missing"],
+                "verification": {"passed": True}}
+    top = [r["record"] for r in retrieved[:2]]
+    try:
+        out = si_provider.generate("ask", {"question": question, "records": top},
+                                   json_keys=("answer",))
+    except si_provider.NoProviderError:
+        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+    v = verifier.verify_text(out.get("answer", ""), _get_record)
+    if not v["passed"] or not v["text"]:
+        _audit({"endpoint": "ask", "question": question, "passed": False, "kind": "unverified"})
+        return {"answer": "No verified answer could be produced from the available data.",
+                "citations": [], "covered": False, "missing": ["verified statement"],
+                "verification": {"passed": False}}
+    cites = sorted(f"rec:{r}#{p}" for r, p in verifier.parse_citations(v["text"]))
+    _audit({"endpoint": "ask", "question": question, "passed": True,
+            "kind": "answerable", "sources": cites})
+    return {"answer": v["text"], "citations": cites, "covered": True, "missing": [],
+            "verification": {"passed": True}}
 
 
 @app.get("/api/export")
