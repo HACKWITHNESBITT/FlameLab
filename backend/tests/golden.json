@@ -1,0 +1,54 @@
+{
+  "_note": "Reviewed 2026-11-14 against 11 records: flex leads O2-bounded envs (10-50% coverage), bass/bass-ii lead open/high-O2 envs on airflow+pillar+fuel, saffire trails on missing conditions. Re-review when records land.",
+  "rankings": {
+    "spacesuit": [
+      "bass",
+      "flex",
+      "bass-ii",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "moon_base": [
+      "bass",
+      "bass-ii",
+      "flex",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "pressurized_rover": [
+      "bass",
+      "bass-ii",
+      "flex",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "spacecraft": [
+      "flex",
+      "bass",
+      "bass-ii",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "station": [
+      "flex",
+      "bass",
+      "bass-ii",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "mars_base": [
+      "bass",
+      "bass-ii",
+      "flex",
+      "saffire-i",
+      "saffire-ii"
+    ],
+    "earth_air": [
+      "flex",
+      "bass",
+      "saffire-i",
+      "saffire-ii",
+      "saffire-iii"
+    ]
+  }
+}

@@ -46,6 +46,22 @@ score = sum(weight_i * factor_i) / sum(weight_i)
 
 Then apply a confidence multiplier from `data_completeness`. Report the multiplier separately in the breakdown.
 
+## Factor formulas (v1)
+
+Implemented verbatim in `backend/scoring.py`. All factors return 0 to 1. Missing inputs score 0 with a flag.
+
+- `oxygen_overlap`: measure of (union of tested O2 ranges ∩ environment range, capped to 0–100%) divided by the capped environment width. Fixed-point environments (min = max): 1 if covered, else `1 − distance/100`.
+- `pressure_overlap`: same, with floor 0 and open maxima capped at 20 psi; fixed points decay over 20 psi.
+- `airflow_match`: 1 on any range overlap, else `1 / (1 + gap/env_width)`. 0 when the record has no airflow data; 0.5 when the environment has no reference airflow.
+- `fuel_relevance`: lens-keyed table — prevention favors `solid` (1.0), detection favors `aerosol_dust` (1.0), suppression favors `liquid_droplet` (1.0); see `FUEL_BY_LENS`. Unconfirmed fuel class scores 0.
+- `hardware_scale`: Saffire project 1.0 (meter scale), CIR 0.6, MSG 0.5, other 0.4, unconfirmed 0.
+- `gravity_relevance`: orbital envs score microgravity 1.0; normal-gravity envs score normal 1.0; partial-gravity envs score every regime 0.6–0.7 (`mimicked_partial` highest) with the partial-gravity flag. The suit profile is treated as orbital.
+- `pillar_fit`: 1 if the lens matches the record's pillars (or lens is `all` with any pillars); 0.2 on mismatch; 0.3 when unassigned under `all`.
+- `data_completeness`: share of ten key fields with `status: read`.
+- Confidence multiplier: `0.5 + 0.5 × data_completeness`. Final score = weighted mean × multiplier; `raw_score` and the multiplier are reported separately.
+- Modeling readiness: quarters for numeric conditions, sized fuels, measurements, and non-empty varied variables.
+- Equipment relevance: `pillar_fit × hardware_scale × confidence_multiplier`.
+
 ## Lenses
 
 A lens raises the weight of related factors:
