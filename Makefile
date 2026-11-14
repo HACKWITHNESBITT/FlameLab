@@ -11,7 +11,7 @@ test-ui:
 	@echo "TODO: frontend journey tests" && exit 1
 
 eval-si:
-	$(PYTHON) scripts/eval_si_shape.py
+	$(PYTHON) si/eval/run.py
 
 validate-records:
 	$(PYTHON) scripts/validate_records.py

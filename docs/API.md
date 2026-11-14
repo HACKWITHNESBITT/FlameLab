@@ -106,7 +106,7 @@ Returns verified SI text with citations.
 }
 ```
 
-`POST /api/si/compare` with `{ "ids": ["a","b"], "environment": "moon_base" }` returns verified comparison text.
+`POST /api/si/compare` with `{ "ids": ["a","b"], "environment": "moon_base" }` returns `{ "ids", "environment", "similarities": [{text, citations}], "differences": [...], "verification": {"passed"} }`. Unverified sentences are dropped, never shown.
 
 ## Ask
 

@@ -9,7 +9,7 @@ Operations guide for running, checking and releasing FlameLab. Stack: see `TECHN
 | Curated records | `data/records/*.json` | Source of truth; schema in `docs/DATA_SCHEMA.md` |
 | Backend and API | `backend/` | FastAPI; endpoints in `docs/API.md` |
 | Config | `backend/config/environments.yaml`, `backend/config/weights.yaml` | Profiles and scoring weights; see `docs/SCORING.md` |
-| SI layer | `si/` (`si/prompts/`, `si/eval/questions.yaml`) | Claude API; rules in `docs/SI_GUIDELINES.md` |
+| SI layer | `si/` (`si/prompts/`, `si/eval/questions.yaml`) | Muse API; rules in `docs/SI_GUIDELINES.md` |
 | Frontend | `frontend/` | React + TypeScript + Vite; Recharts + D3 for visualizations |
 
 ## Setup
@@ -18,7 +18,7 @@ Operations guide for running, checking and releasing FlameLab. Stack: see `TECHN
 2. Validate records: `make validate-records` (schema per `docs/DATA_SCHEMA.md`).
 3. Start the API: `make run-api` (serves `/api` per `docs/API.md`).
 4. Start the frontend: `make run-ui` (reads the same `/api` base path).
-5. SI provider key: export `ANTHROPIC_API_KEY`; without it SI endpoints return `503` and the rest of the app keeps working.
+5. SI provider key: export `MODEL_API_KEY` (Meta Model API key for Muse); without it SI endpoints return `503` and the rest of the app keeps working.
 
 ## Common commands
 
