@@ -1,14 +1,13 @@
-"""FlameLab API (Dev 2, Day 1 PM).
+"""FlameLab API.
 
 Reads real curated data through the loader-backed SQLite store. Rank scores
-are still interim placeholders — Dev 3 replaces them on the scoring branch —
-and SI endpoints stay 503 until Dev 4 lands a provider key.
+are still interim placeholders — the scoring engine replaces them —
+and SI endpoints stay 503 until the SI layer lands a provider key.
 """
 
 from __future__ import annotations
 
 import csv
-import hashlib
 import io
 import json
 from pathlib import Path
@@ -19,7 +18,7 @@ from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from backend import store
+from backend import scoring, store
 
 ROOT = Path(__file__).resolve().parent
 RECORDS = ROOT.parent / "data" / "records"
@@ -45,16 +44,7 @@ EARTH_APPLICATIONS = [
      "source": "https://spinoff.nasa.gov/node/9918", "note": "1980s application of spacesuit technology"},
 ]
 
-FACTOR_FIELDS = {
-    "oxygen_overlap": ["test_conditions.oxygen_percent"],
-    "pressure_overlap": ["test_conditions.pressure_psi"],
-    "airflow_match": ["test_conditions.airflow_cm_s"],
-    "fuel_relevance": ["fuels", "fuel_class"],
-    "hardware_scale": ["hardware", "fuels.size"],
-    "gravity_relevance": ["gravity_regime"],
-    "pillar_fit": ["safety_pillars"],
-    "data_completeness": [],
-}
+FACTOR_FIELDS = scoring.FACTOR_FIELDS
 
 app = FastAPI(title="FlameLab API", version=VERSION)
 
@@ -72,13 +62,7 @@ def _env_or_none(env_id: str | None) -> dict | None:
     return next((e for e in ENVIRONMENTS if e["id"] == env_id), None)
 
 
-def _pseudo(seed: str) -> float:
-    """Deterministic placeholder in [0,1]. Interim only; Dev 3 replaces with real factors."""
-    return round(int(hashlib.sha256(seed.encode()).hexdigest()[:8], 16) / 0xFFFFFFFF, 3)
-
-
-def _roster() -> list[dict]:
-    return store.list_investigations(DB_PATH, limit=1000)
+# Roster and factor math live in backend.store / backend.scoring.
 
 
 @app.get("/api/health")
@@ -123,29 +107,8 @@ def rank(environment: str = "moon_base", lens: str = "all"):
         return err("unknown_environment", f"Unknown environment: {environment}", 400)
     if lens not in ("all", "prevention", "detection", "suppression"):
         return err("invalid_lens", f"Invalid lens: {lens}", 400)
-    weights = dict(WEIGHTS["default"])
-    weights.update(WEIGHTS.get("lenses", {}).get(lens, {}))
-    total = sum(weights.values())
     env = _env_or_none(environment)
-    partial_g = str(env.get("gravity", "")).endswith("no_data")
-    out = []
-    for row in _roster():
-        factors = []
-        for fname, w in weights.items():
-            f = _pseudo(f"{row['id']}:{environment}:{fname}")
-            factors.append({"factor": fname, "score": f, "weight": w,
-                            "contribution": round(w * f / total, 4),
-                            "fields": FACTOR_FIELDS[fname]})
-        score = round(sum(f["contribution"] for f in factors), 4)
-        flags = ["interim scores — real scoring lands on the scoring branch"]
-        if partial_g:
-            flags.append("partial gravity: PSI has no Moon/Mars-g data; microgravity and normal-gravity results bound it")
-        out.append({"id": row["id"], "score": score,
-                    "modeling_readiness": _pseudo(f"{row['id']}:mr"),
-                    "equipment_relevance": _pseudo(f"{row['id']}:er"),
-                    "factors": factors, "flags": flags})
-    out.sort(key=lambda r: r["score"], reverse=True)
-    return out
+    return scoring.score_all(store.all_records(DB_PATH), env, WEIGHTS, lens)
 
 
 @app.get("/api/compare")
@@ -211,7 +174,7 @@ def gaps(environment: str = "moon_base"):
          "detail": "PSI holds microgravity and normal-gravity results only; nothing at Moon or Mars gravity.",
          "bounds": ["bass-ii", "saffire-i"]},
         {"gap": "missing_oxygen_ranges", "title": "Oxygen ranges still being curated",
-         "detail": "Numeric ranges land per record with Dev 1 curation; see data_quality notes.",
+         "detail": "Numeric ranges land per record with curation; see data_quality notes.",
          "bounds": ["cfi-g", "bass-ii"]},
         {"gap": "untested_combinations", "title": "Untested fuel/atmosphere combinations",
          "detail": "30%+ O2 at <=10.2 psi in partial gravity has no direct test.",
@@ -221,17 +184,17 @@ def gaps(environment: str = "moon_base"):
 
 @app.get("/api/si/summary/{inv_id}")
 def si_summary(inv_id: str, environment: str = "moon_base") -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
 
 
 @app.post("/api/si/compare")
 def si_compare(payload: dict) -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
 
 
 @app.post("/api/ask")
 def ask(payload: dict) -> JSONResponse:
-    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY (Dev 4, Day 1 PM)", 503)
+    return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
 
 
 @app.get("/api/export")
