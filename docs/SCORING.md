@@ -1,6 +1,6 @@
 # SCORING
 
-How Ember ranks investigations for a target environment. The ranking is a transparent weighted sum. Every result carries its per-factor breakdown.
+How FlameLab ranks investigations for a target environment. The ranking is a transparent weighted sum. Every result carries its per-factor breakdown.
 
 ## Principles
 
