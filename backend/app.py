@@ -1,11 +1,8 @@
-"""Ember Phase 0 mock API (gate G1).
+"""FlameLab API (Dev 2, Day 1 PM).
 
-Serves REAL data where Phase 0 produced it (environment profiles, weights,
-investigation list, Earth applications) and clearly-marked MOCK shapes
-everywhere else, so frontend and visualization work can start immediately.
-
-Forward-compatible by design: GET /api/investigations/{id} serves
-data/records/<id>.json as soon as Dev 1 lands it, with zero code change.
+Reads real curated data through the loader-backed SQLite store. Rank scores
+are still interim placeholders — Dev 3 replaces them on the scoring branch —
+and SI endpoints stay 503 until Dev 4 lands a provider key.
 """
 
 from __future__ import annotations
@@ -22,9 +19,12 @@ from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from backend import store
+
 ROOT = Path(__file__).resolve().parent
 RECORDS = ROOT.parent / "data" / "records"
-VERSION = "v0.1.0-mock"
+DB_PATH = ROOT / "flamelab.db"
+VERSION = "v0.2.0-loader"
 
 
 def _load_yaml(name: str) -> dict:
@@ -34,33 +34,7 @@ def _load_yaml(name: str) -> dict:
 
 ENVIRONMENTS: list[dict[str, Any]] = _load_yaml("environments.yaml")["environments"]
 WEIGHTS: dict[str, Any] = _load_yaml("weights.yaml")
-
-# Real investigation roster from docs/INVESTIGATIONS.md (existence is real,
-# test-condition details are mock until curated records land).
-INVESTIGATIONS: list[dict[str, Any]] = [
-    {"id": "bass", "psi_id": None, "name": "BASS", "type": "microgravity", "hardware": "MSG", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "bass-ii", "psi_id": None, "name": "BASS-II", "type": "microgravity", "hardware": "MSG", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "saffire-i", "psi_id": None, "name": "Saffire-I", "type": "microgravity", "hardware": "other", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "saffire-ii", "psi_id": None, "name": "Saffire-II", "type": "microgravity", "hardware": "other", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "saffire-iii", "psi_id": None, "name": "Saffire-III", "type": "microgravity", "hardware": "other", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "same", "psi_id": None, "name": "SAME", "type": "microgravity", "hardware": "MSG", "fuel_class": "other", "pillars": ["detection"], "gravity": "microgravity"},
-    {"id": "same-r", "psi_id": None, "name": "SAME-R", "type": "microgravity", "hardware": "MSG", "fuel_class": "other", "pillars": ["detection"], "gravity": "microgravity"},
-    {"id": "daft", "psi_id": None, "name": "DAFT", "type": "microgravity", "hardware": "MSG", "fuel_class": "aerosol_dust", "pillars": ["detection"], "gravity": "microgravity"},
-    {"id": "daft-2", "psi_id": None, "name": "DAFT-2", "type": "microgravity", "hardware": "MSG", "fuel_class": "aerosol_dust", "pillars": ["detection"], "gravity": "microgravity"},
-    {"id": "flex", "psi_id": None, "name": "FLEX", "type": "microgravity", "hardware": "CIR", "fuel_class": "liquid_droplet", "pillars": ["suppression"], "gravity": "microgravity"},
-    {"id": "flex-2", "psi_id": None, "name": "FLEX-2", "type": "microgravity", "hardware": "CIR", "fuel_class": "liquid_droplet", "pillars": ["suppression"], "gravity": "microgravity"},
-    {"id": "bass-model", "psi_id": "PSI-62", "name": "Concurrent Flame Spread Modeling (BASS/BASS-II)", "type": "ground", "hardware": "other", "fuel_class": "solid", "pillars": [], "gravity": "microgravity"},
-    {"id": "cfi", "psi_id": None, "name": "CFI", "type": "microgravity", "hardware": "CIR", "fuel_class": "liquid_droplet", "pillars": [], "gravity": "microgravity"},
-    {"id": "cfi-g", "psi_id": "PSI-159", "name": "CFI-G", "type": "microgravity", "hardware": "CIR", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-    {"id": "acme-bre", "psi_id": None, "name": "BRE (ACME)", "type": "microgravity", "hardware": "CIR", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-    {"id": "acme-efield", "psi_id": None, "name": "E-FIELD Flames (ACME)", "type": "microgravity", "hardware": "CIR", "fuel_class": "gas", "pillars": [], "gravity": "mimicked_partial"},
-    {"id": "acme-flame-design", "psi_id": "PSI-10", "name": "Flame Design (ACME)", "type": "microgravity", "hardware": "CIR", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-    {"id": "coolflame-model", "psi_id": "PSI-117", "name": "Thermo-Convective Perturbation of Cool Flames", "type": "ground", "hardware": "other", "fuel_class": "liquid_droplet", "pillars": [], "gravity": "microgravity"},
-    {"id": "spice", "psi_id": None, "name": "SPICE", "type": "microgravity", "hardware": "MSG", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-    {"id": "spice-analysis", "psi_id": "PSI-60", "name": "Computational/Experimental Analysis of SPICE Data", "type": "ground", "hardware": "other", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-    {"id": "slice", "psi_id": None, "name": "SLICE", "type": "microgravity", "hardware": "MSG", "fuel_class": "gas", "pillars": [], "gravity": "microgravity"},
-]
-BY_ID = {inv["id"]: inv for inv in INVESTIGATIONS}
+LOAD_STATS = store.build_db(RECORDS, DB_PATH)
 
 EARTH_APPLICATIONS = [
     {"application": "firefighters' air tanks and breathing gear", "investigation": None,
@@ -82,7 +56,7 @@ FACTOR_FIELDS = {
     "data_completeness": [],
 }
 
-app = FastAPI(title="Ember API (mock)", version=VERSION)
+app = FastAPI(title="FlameLab API", version=VERSION)
 
 
 def err(code: str, message: str, status: int) -> JSONResponse:
@@ -99,13 +73,17 @@ def _env_or_none(env_id: str | None) -> dict | None:
 
 
 def _pseudo(seed: str) -> float:
-    """Deterministic placeholder in [0,1]. Mock only; Dev 3 replaces with real factors."""
+    """Deterministic placeholder in [0,1]. Interim only; Dev 3 replaces with real factors."""
     return round(int(hashlib.sha256(seed.encode()).hexdigest()[:8], 16) / 0xFFFFFFFF, 3)
 
 
+def _roster() -> list[dict]:
+    return store.list_investigations(DB_PATH, limit=1000)
+
+
 @app.get("/api/health")
-def health() -> dict:
-    return {"status": "ok", "version": VERSION}
+def health():
+    return {"status": "ok", "version": VERSION, "records": LOAD_STATS["investigations"]}
 
 
 @app.get("/api/environments")
@@ -124,49 +102,19 @@ def list_investigations(
     q: str | None = None,
     limit: int = 50,
     offset: int = 0,
-) -> list[dict]:
-    # NOTE (mock): oxygen_min/max activate with real records (Day 1 PM); the
-    # mock carries no test-condition ranges, so they filter nothing yet.
-    rows = INVESTIGATIONS
-    if hardware:
-        rows = [r for r in rows if r["hardware"] == hardware]
-    if fuel_class:
-        rows = [r for r in rows if r["fuel_class"] == fuel_class]
-    if pillar:
-        rows = [r for r in rows if pillar in r["pillars"]]
-    if gravity_regime:
-        rows = [r for r in rows if r["gravity"] == gravity_regime]
-    if q:
-        ql = q.lower()
-        rows = [r for r in rows if ql in r["name"].lower() or ql in r["id"]]
-    return [
-        {"id": r["id"], "name": r["name"], "psi_id": r["psi_id"], "hardware": r["hardware"],
-         "fuel_class": r["fuel_class"], "pillars": r["pillars"],
-         "gravity_regime": r["gravity"], "investigation_type": r["type"]}
-        for r in rows[offset:offset + limit]
-    ]
+):
+    return store.list_investigations(
+        DB_PATH, hardware=hardware, fuel_class=fuel_class, pillar=pillar,
+        gravity=gravity_regime, oxygen_min=oxygen_min, oxygen_max=oxygen_max,
+        q=q, limit=limit, offset=offset)
 
 
 @app.get("/api/investigations/{inv_id}")
 def investigation_detail(inv_id: str):
-    path = RECORDS / f"{inv_id}.json"
-    if path.exists():
-        return json.loads(path.read_text())  # real record as soon as Dev 1 lands it
-    row = BY_ID.get(inv_id)
-    if row is None:
+    rec = store.get_investigation(DB_PATH, inv_id)
+    if rec is None:
         return err("unknown_id", f"Unknown investigation: {inv_id}", 404)
-    missing = {"value": None, "status": "missing"}
-    return {
-        "id": row["id"], "psi_id": row["psi_id"], "name": row["name"],
-        "mock": True,
-        "hardware": {"value": row["hardware"], "status": "read", "source": {"doc": "docs/INVESTIGATIONS.md"}},
-        "fuel_class": {"value": row["fuel_class"], "status": "read", "source": {"doc": "docs/INVESTIGATIONS.md"}},
-        "gravity_regime": {"value": row["gravity"], "status": "read", "source": {"doc": "docs/INVESTIGATIONS.md"}},
-        "investigation_type": {"value": row["type"], "status": "read", "source": {"doc": "docs/INVESTIGATIONS.md"}},
-        "safety_pillars": {"value": row["pillars"], "status": "read", "source": {"doc": "docs/INVESTIGATIONS.md"}},
-        "fuels": missing, "test_conditions": missing, "variables": missing,
-        "measurements": missing, "objectives": missing, "summary": missing,
-    }
+    return rec
 
 
 @app.get("/api/rank")
@@ -181,7 +129,7 @@ def rank(environment: str = "moon_base", lens: str = "all"):
     env = _env_or_none(environment)
     partial_g = str(env.get("gravity", "")).endswith("no_data")
     out = []
-    for row in INVESTIGATIONS:
+    for row in _roster():
         factors = []
         for fname, w in weights.items():
             f = _pseudo(f"{row['id']}:{environment}:{fname}")
@@ -189,7 +137,7 @@ def rank(environment: str = "moon_base", lens: str = "all"):
                             "contribution": round(w * f / total, 4),
                             "fields": FACTOR_FIELDS[fname]})
         score = round(sum(f["contribution"] for f in factors), 4)
-        flags = ["mock scores — real scoring lands Day 1 PM", "test conditions missing"]
+        flags = ["interim scores — real scoring lands on the scoring branch"]
         if partial_g:
             flags.append("partial gravity: PSI has no Moon/Mars-g data; microgravity and normal-gravity results bound it")
         out.append({"id": row["id"], "score": score,
@@ -205,30 +153,47 @@ def compare(ids: str = Query("")):
     wanted = [i.strip() for i in ids.split(",") if i.strip()]
     if len(wanted) not in (2, 3):
         return err("invalid_ids", "Provide two or three ids", 400)
-    unknown = [i for i in wanted if i not in BY_ID]
-    if unknown:
-        return err("unknown_id", f"Unknown ids: {', '.join(unknown)}", 404)
-    rows = {i: BY_ID[i] for i in wanted}
-    fields = ["hardware", "fuel_class", "pillars", "gravity", "type"]
-    aligned = {i: {f: rows[i][f] for f in fields} for i in wanted}
+    if len(set(wanted)) != len(wanted):
+        return err("invalid_ids", "Duplicate ids", 400)
+    rows = {}
+    for i in wanted:
+        rec = store.get_investigation(DB_PATH, i)
+        if rec is None:
+            return err("unknown_id", f"Unknown id: {i}", 404)
+        rows[i] = rec
+    fields = ["hardware", "fuel_class", "safety_pillars", "gravity_regime", "investigation_type"]
+
+    def _v(rec, f):
+        v = rec.get(f)
+        return v.get("value") if isinstance(v, dict) and "value" in v else v
+
+    aligned = {i: {f: _v(rows[i], f) for f in fields} for i in wanted}
     similarities, differences = [], []
     for f in fields:
-        vals = {i: rows[i][f] for i in wanted}
-        (similarities if len({json.dumps(v, sort_keys=True) for v in vals.values()}) == 1
+        vals = {i: aligned[i][f] for i in wanted}
+        (similarities if len({json.dumps(v, sort_keys=True, default=str) for v in vals.values()}) == 1
          else differences).append({"field": f, "values": vals})
     return {"ids": wanted, "aligned": aligned, "similarities": similarities,
-            "differences": differences, "mock": True}
+            "differences": differences}
+
+
+def _range_block(lo, hi) -> dict:
+    if lo is None and hi is None:
+        return {"min": None, "max": None, "status": "missing"}
+    return {"min": lo, "max": hi, "status": "present"}
 
 
 @app.get("/api/conditions")
-def conditions() -> dict:
+def conditions():
     return {
         "investigations": [
-            {"id": r["id"],
-             "oxygen_percent": {"value": None, "status": "missing"},
-             "pressure_psi": {"value": None, "status": "missing"},
-             "airflow_cm_s": {"value": None, "status": "missing"}}
-            for r in INVESTIGATIONS
+            {"id": c["id"], "groups": [
+                {"label": g["label"],
+                 "oxygen_percent": _range_block(g["o2_min"], g["o2_max"]),
+                 "pressure_psi": _range_block(g["p_min"], g["p_max"]),
+                 "airflow_cm_s": _range_block(g["af_min"], g["af_max"])}
+                for g in c["groups"]]}
+            for c in store.all_conditions(DB_PATH)
         ],
         "zones": [
             {"environment": e["id"], "label": e["label"],
@@ -247,8 +212,8 @@ def gaps(environment: str = "moon_base"):
         {"gap": "partial_gravity", "title": "No partial-gravity combustion data",
          "detail": "PSI holds microgravity and normal-gravity results only; nothing at Moon or Mars gravity.",
          "bounds": ["bass-ii", "saffire-i"]},
-        {"gap": "missing_oxygen_ranges", "title": "Oxygen ranges not yet curated",
-         "detail": "Test-condition ranges land with Dev 1 records (Day 1 PM).",
+        {"gap": "missing_oxygen_ranges", "title": "Oxygen ranges still being curated",
+         "detail": "Numeric ranges land per record with Dev 1 curation; see data_quality notes.",
          "bounds": ["cfi-g", "bass-ii"]},
         {"gap": "untested_combinations", "title": "Untested fuel/atmosphere combinations",
          "detail": "30%+ O2 at <=10.2 psi in partial gravity has no direct test.",
@@ -272,24 +237,36 @@ def ask(payload: dict) -> JSONResponse:
 
 
 @app.get("/api/export")
-def export(ids: str = Query(""), format: str = "json", fields: str = "") -> JSONResponse:
+def export(ids: str = Query(""), format: str = "json", fields: str = ""):
     wanted = [i.strip() for i in ids.split(",") if i.strip()]
     if not wanted:
         return err("invalid_ids", "Provide at least one id", 400)
-    unknown = [i for i in wanted if i not in BY_ID]
-    if unknown:
-        return err("unknown_id", f"Unknown ids: {', '.join(unknown)}", 404)
+    for i in wanted:
+        if store.get_investigation(DB_PATH, i) is None:
+            return err("unknown_id", f"Unknown id: {i}", 404)
     if format not in ("csv", "json"):
         return err("invalid_format", "format must be csv or json", 400)
-    cols = [c.strip() for c in fields.split(",") if c.strip()] or ["id", "name", "hardware", "fuel_class", "pillars"]
-    rows = [{c: BY_ID[i].get(c) for c in cols} for i in wanted]
     if format == "json":
-        return JSONResponse({"ids": wanted, "fields": cols, "rows": rows, "mock": True})
+        cols = [c.strip() for c in fields.split(",") if c.strip()] or ["id", "name", "hardware", "fuel_class"]
+        rows = []
+        for i in wanted:
+            rec = store.get_investigation(DB_PATH, i)
+
+            def _v(f):
+                v = rec.get(f)
+                return v.get("value") if isinstance(v, dict) and "value" in v else v
+
+            rows.append({c: _v(c) for c in cols})
+        return {"ids": wanted, "fields": cols, "rows": rows}
     buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=cols)
+    conds = {c["id"]: c["groups"] for c in store.all_conditions(DB_PATH)}
+    w = csv.DictWriter(buf, fieldnames=["id", "label", "o2_min", "o2_max", "p_min", "p_max", "af_min", "af_max"])
     w.writeheader()
-    w.writerows(rows)
-    return JSONResponse({"ids": wanted, "fields": cols, "csv": buf.getvalue(), "mock": True})
+    for i in wanted:
+        for g in conds.get(i, []):
+            w.writerow({"id": i, "label": g["label"], "o2_min": g["o2_min"], "o2_max": g["o2_max"],
+                        "p_min": g["p_min"], "p_max": g["p_max"], "af_min": g["af_min"], "af_max": g["af_max"]})
+    return {"ids": wanted, "format": "csv", "csv": buf.getvalue()}
 
 
 @app.get("/api/earth-applications")

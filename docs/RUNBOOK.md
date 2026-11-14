@@ -1,6 +1,6 @@
 # RUNBOOK
 
-Operations guide for running, checking and releasing Ember. Stack: see `TECHNICAL_STACK_AND_ARCHITECTURE.md` (React + TypeScript + Vite frontend, FastAPI backend, JSON + SQLite data, Claude SI layer).
+Operations guide for running, checking and releasing FlameLab. Stack: see `TECHNICAL_STACK_AND_ARCHITECTURE.md` (React + TypeScript + Vite frontend, FastAPI backend, JSON + SQLite data, Claude SI layer).
 
 ## Components
 
@@ -79,4 +79,4 @@ After the schema freeze (G1), changes need a migration and a note in `docs/DATA_
 
 ## Safety note
 
-Ember summarizes research data only. It must not give crew response procedures; direct users to mission safety authorities.
+FlameLab summarizes research data only. It must not give crew response procedures; direct users to mission safety authorities.
