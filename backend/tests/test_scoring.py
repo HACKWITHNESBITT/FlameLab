@@ -1,4 +1,4 @@
-"""Scoring engine tests: hand-checked factors, properties, golden rankings."""
+"""Scoring engine tests: hand-checked factors, strict evidence properties, golden."""
 import copy
 import json
 from pathlib import Path
@@ -41,60 +41,82 @@ def test_oxygen_overlap_hand_checked():
     assert abs(s - 20 / 70) < 1e-4
 
 
-def test_oxygen_missing_scores_zero_with_flag():
-    s, flags = scoring.oxygen_overlap(_rec(), ENVS["moon_base"])
-    assert s == 0.0 and flags == ["oxygen missing"]
+def test_condition_factors_unevaluated_when_missing():
+    assert scoring.oxygen_overlap(_rec(), ENVS["moon_base"])[0] is None
+    assert scoring.pressure_overlap(_rec(), ENVS["moon_base"])[0] is None
+    assert scoring.airflow_match(_rec(), ENVS["moon_base"])[0] is None
+    # No environment reference range is also insufficient data, never neutral.
+    assert scoring.airflow_match(_rec(test_conditions=_w([_tc(af=5)])),
+                                 ENVS["earth_air"])[0] is None
 
 
-def test_pressure_overlap_hand_checked():
-    r = _rec(test_conditions=_w([_tc(p={"min": 7.35, "max": 14.7})]))
-    s, _ = scoring.pressure_overlap(r, ENVS["moon_base"])  # 7.35-10.2 of 0-10.2
-    assert abs(s - 2.85 / 10.2) < 1e-4
-
-
-def test_airflow_overlap_is_full_match():
-    r = _rec(test_conditions=_w([_tc(af={"min": 5, "max": 50})]))
-    s, _ = scoring.airflow_match(r, ENVS["moon_base"])
-    assert s == 1.0
-
-
-def test_lookup_factors():
+def test_lookup_factors_unevaluated_when_unconfirmed():
     assert scoring.fuel_relevance(_rec(), None, "prevention")[0] == 1.0
-    assert scoring.fuel_relevance(_rec(fuel_class=_w("aerosol_dust")), None, "detection")[0] == 1.0
+    assert scoring.fuel_relevance(_rec(fuel_class={"value": None, "status": "missing"}),
+                                  None, "prevention")[0] is None
     assert scoring.hardware_scale(_rec(project="Saffire"), None)[0] == 1.0
-    assert scoring.hardware_scale(_rec(), None)[0] == 0.5
-    s, flags = scoring.gravity_relevance(_rec(), ENVS["moon_base"])
-    assert s == 0.6 and any("partial gravity" in f for f in flags)
+    assert scoring.hardware_scale(_rec(hardware={"value": None, "status": "missing"}),
+                                  None)[0] is None
+    # Genuine mismatch is evaluated evidence; unknown pillars are not.
     assert scoring.pillar_fit(_rec(), None, "prevention")[0] == 1.0
     assert scoring.pillar_fit(_rec(), None, "detection")[0] == 0.2
+    assert scoring.pillar_fit(_rec(safety_pillars=_w([])), None, "all")[0] is None
 
 
-def test_completeness_counts_read_only():
-    assert scoring.data_completeness(_rec(), None)[0] == 1.0
-    sparse = _rec(hardware={"value": None, "status": "missing"})
-    assert scoring.data_completeness(sparse, None)[0] == 0.9
+def test_gravity_partial_envs_score_nothing_but_analogues():
+    s, _ = scoring.gravity_relevance(_rec(), ENVS["spacecraft"])
+    assert s == 1.0
+    s, flags = scoring.gravity_relevance(_rec(), ENVS["moon_base"])
+    assert s is None and any("partial gravity" in f for f in flags)
+    s, flags = scoring.gravity_relevance(_rec(gravity_regime=_w("mimicked_partial")),
+                                         ENVS["moon_base"])
+    assert s == 0.7 and any("analogue" in f for f in flags)
 
 
-def test_modeling_readiness_quarters():
-    assert scoring.modeling_readiness(_rec()) == 0.0
-    full = _rec(test_conditions=_w([_tc(o2=17)]),
-                fuels=_w([{"name": "x", "size": "2 mm"}]),
-                measurements=_w([{"sensor": "s"}]),
-                variables=_w({"varied": ["flow"], "held_constant": []}))
-    assert scoring.modeling_readiness(full) == 1.0
+def test_config_tables_cover_all_enums():
+    t = scoring.TABLES
+    assert t["provenance"]["status"] == "unreviewed"
+    fuels = {"solid", "gas", "liquid_droplet", "aerosol_dust", "other"}
+    for lens in ("all", "prevention", "detection", "suppression"):
+        assert set(t["fuel_by_lens"][lens]) == fuels
+    assert set(t["hardware_scale"]) == {"CIR", "MSG", "other"}
+    assert set(t["gravity_score"]) == {"microgravity", "normal_gravity", "partial"}
 
 
-def test_scores_bounded_and_missing_never_raises():
+def test_completeness_is_reported_not_weighted():
+    assert scoring.data_completeness(_rec()) == 1.0
+    out = scoring.score_record(_rec(), ENVS["moon_base"], W)
+    assert "data_completeness" not in [f["factor"] for f in out["factors"]]
+    assert out["evidence"]["completeness"] == 1.0
+
+
+def test_scores_bounded_and_rank_value_monotone_in_evidence():
     recs = [json.loads(p.read_text()) for p in sorted((ROOT / "data" / "records").glob("*.json"))]
     for env in ENVS.values():
-        for r in scoring.score_all(recs, env, W, "all"):
-            assert 0.0 <= r["score"] <= 1.0
-            assert all(0.0 <= f["score"] <= 1.0 for f in r["factors"])
-    victim = next(r for r in recs if r["id"] == "flex")
-    stripped = copy.deepcopy(victim)
+        ranked = scoring.score_all(recs, env, W, "all")
+        vals = [r["rank_value"] for r in ranked]
+        assert vals == sorted(vals, reverse=True)
+        for r in ranked:
+            assert 0.0 <= r["rank_value"] <= 1.0
+            assert all(f["score"] is None or 0.0 <= f["score"] <= 1.0 for f in r["factors"])
+    flex = next(r for r in recs if r["id"] == "flex")
+    env = ENVS["moon_base"]
+    full = scoring.score_record(flex, env, W)
+    stripped = copy.deepcopy(flex)
     stripped["test_conditions"] = {"value": [], "status": "missing"}
-    full = scoring.score_record(victim, ENVS["moon_base"], W)["score"]
-    assert scoring.score_record(stripped, ENVS["moon_base"], W)["score"] <= full
+    bare = scoring.score_record(stripped, env, W)
+    assert bare["rank_value"] <= full["rank_value"]
+    assert bare["evidence"]["coverage"] < full["evidence"]["coverage"]
+    empty = scoring.score_record({"id": "void"}, env, W)
+    assert empty["insufficient_data"] and empty["score"] is None
+
+
+def test_equipment_null_propagates():
+    out = scoring.score_record(_rec(), ENVS["moon_base"], W)
+    assert out["equipment_relevance"] == 0.5  # pillar 1.0 x MSG 0.5
+    out = scoring.score_record(_rec(hardware={"value": None, "status": "missing"}),
+                               ENVS["moon_base"], W)
+    assert out["equipment_relevance"] is None
 
 
 def test_golden_top_five_per_environment(tmp_path):

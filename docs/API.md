@@ -43,24 +43,34 @@ Returns the full record, including per-field `status` and `source`.
 
 `GET /api/rank?environment={id}&lens={all|prevention|detection|suppression}`
 
-Returns investigations sorted by score.
+Returns investigations sorted by `rank_value` (descending). Factors with insufficient input are `status: insufficient_data` with `score: null`; they contribute 0 to `rank_value` and are excluded from `score`. See `docs/SCORING.md` for the evidence policy.
 
 ```json
 [
   {
     "id": "bass-ii",
-    "score": 0.0,
-    "modeling_readiness": 0.0,
-    "equipment_relevance": 0.0,
+    "score": 0.87,
+    "rank_value": 0.47,
+    "insufficient_data": false,
+    "evidence": {
+      "completeness": 1.0,
+      "coverage": 0.54,
+      "evaluated": ["airflow_match", "fuel_relevance", "hardware_scale", "pillar_fit"],
+      "unevaluated": [
+        { "factor": "oxygen_overlap", "reason": "oxygen missing" }
+      ]
+    },
+    "modeling_readiness": 1.0,
+    "equipment_relevance": 0.5,
     "factors": [
-      { "factor": "oxygen_overlap", "score": 0.0, "weight": 0.0, "contribution": 0.0, "fields": ["test_conditions.oxygen_percent"] }
+      { "factor": "oxygen_overlap", "score": null, "weight": 3, "contribution": 0.0, "fields": ["test_conditions.oxygen_percent"], "status": "insufficient_data" }
     ],
-    "flags": ["airflow missing"]
+    "flags": ["oxygen missing"]
   }
 ]
 ```
 
-The numbers above are placeholders for the shape only.
+The numbers above illustrate the shape only. Returns 503 `scoring_disabled` when the operator kill-switch (`FLAMELAB_SCORING_ENABLED=off`) is set.
 
 ## Compare
 

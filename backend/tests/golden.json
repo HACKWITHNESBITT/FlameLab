@@ -1,5 +1,4 @@
 {
-  "_note": "Reviewed 2026-11-14 against 11 records: flex leads O2-bounded envs (10-50% coverage), bass/bass-ii lead open/high-O2 envs on airflow+pillar+fuel, saffire trails on missing conditions. Re-review when records land.",
   "rankings": {
     "spacesuit": [
       "bass",
@@ -50,5 +49,6 @@
       "saffire-ii",
       "saffire-iii"
     ]
-  }
+  },
+  "_note": "Reviewed 2026-11-14 (strict evidence policy, 11 records): ordering follows measured evidence mass \u2014 bass/flex lead where their tested O2/airflow/pressure apply; condition-less records trail with explicit unevaluated lists. Re-review when records land."
 }

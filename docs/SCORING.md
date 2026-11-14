@@ -25,7 +25,7 @@ Each profile also stores: expected airflow range (assumption), gravity regime no
 
 ## Factors
 
-Each factor returns a score from 0 to 1.
+Each factor returns a score from 0 to 1, or is unevaluated when its input is insufficient (see Evidence policy).
 
 | Factor | What it measures | Fields used |
 | --- | --- | --- |
@@ -36,31 +36,44 @@ Each factor returns a score from 0 to 1.
 | `hardware_scale` | Relevance of test scale to real habitat fires | `hardware`, `fuels.size` |
 | `gravity_relevance` | Microgravity evidence for orbital environments; normal-gravity bounds for surface environments, with a flag | `gravity_regime` |
 | `pillar_fit` | Match between the investigation's safety pillars and the selected lens | `safety_pillars` |
-| `data_completeness` | Share of required fields that are `read` rather than `missing` or `inferred` | all |
+
+`data_completeness` (share of key fields `read`) is reported in the evidence block, not weighted into the score.
 
 ## Combination
 
 ```
-score = sum(weight_i * factor_i) / sum(weight_i)
+score       = sum(weight_i * factor_i) / sum(weight_i)   over EVALUATED factors
+rank_value  = sum(weight_i * factor_i) / sum(weight_i)   over ALL factors (unevaluated = 0)
 ```
 
-Then apply a confidence multiplier from `data_completeness`. Report the multiplier separately in the breakdown.
+`score` is what the evidence says; `rank_value` orders the ranking. Because unevaluated factors contribute 0 to `rank_value`, removing evidence can never improve a rank.
+
+## Evidence policy (strict)
+
+A factor with insufficient input is UNEVALUATED (`score: null` with a reason) — never a number. In particular: condition factors with no record data, airflow with no environment reference range, fuel/hardware/pillar inputs unconfirmed, and micro/normal-gravity records in partial-gravity environments (no partial-gravity data exists; only `mimicked_partial` evaluates there, as an analogue).
+
+- Reported `score` = weighted mean over EVALUATED factors only ("given what we know").
+- `rank_value` = weighted sum over ALL weights with unevaluated contributing 0. This orders the ranking, which guarantees removing evidence can never improve a rank.
+- `evidence` block reports `completeness` (share of ten key fields `read`), `coverage` (evaluated weight / total weight), and the evaluated/unevaluated factor lists with reasons. Completeness is never multiplied into the score.
+- Records with no evaluated factors get `score: null`, `insufficient_data: true`, and sort last.
 
 ## Factor formulas (v1)
 
-Implemented verbatim in `backend/scoring.py`. All factors return 0 to 1. Missing inputs score 0 with a flag.
+Implemented verbatim in `backend/scoring.py`. Heuristic tables live in `backend/config/scoring_tables.yaml` with provenance and review ownership; they are engineering judgments pending domain-expert review.
 
-- `oxygen_overlap`: measure of (union of tested O2 ranges ∩ environment range, capped to 0–100%) divided by the capped environment width. Fixed-point environments (min = max): 1 if covered, else `1 − distance/100`.
-- `pressure_overlap`: same, with floor 0 and open maxima capped at 20 psi; fixed points decay over 20 psi.
-- `airflow_match`: 1 on any range overlap, else `1 / (1 + gap/env_width)`. 0 when the record has no airflow data; 0.5 when the environment has no reference airflow.
-- `fuel_relevance`: lens-keyed table — prevention favors `solid` (1.0), detection favors `aerosol_dust` (1.0), suppression favors `liquid_droplet` (1.0); see `FUEL_BY_LENS`. Unconfirmed fuel class scores 0.
-- `hardware_scale`: Saffire project 1.0 (meter scale), CIR 0.6, MSG 0.5, other 0.4, unconfirmed 0.
-- `gravity_relevance`: orbital envs score microgravity 1.0; normal-gravity envs score normal 1.0; partial-gravity envs score every regime 0.6–0.7 (`mimicked_partial` highest) with the partial-gravity flag. The suit profile is treated as orbital.
-- `pillar_fit`: 1 if the lens matches the record's pillars (or lens is `all` with any pillars); 0.2 on mismatch; 0.3 when unassigned under `all`.
-- `data_completeness`: share of ten key fields with `status: read`.
-- Confidence multiplier: `0.5 + 0.5 × data_completeness`. Final score = weighted mean × multiplier; `raw_score` and the multiplier are reported separately.
+- `oxygen_overlap`: measure of (union of tested O2 ranges ∩ environment range, capped to 0–100%) divided by the capped environment width. Fixed-point environments: 1 if covered, else `1 − distance/100`. No record data: unevaluated.
+- `pressure_overlap`: same, with floor 0 and open maxima capped at 20 psi; fixed points decay over 20 psi. No record data: unevaluated.
+- `airflow_match`: 1 on any range overlap, else `1 / (1 + gap/env_width)`. No record data or no environment reference: unevaluated.
+- `fuel_relevance`: lens-keyed config table (prevention → `solid`, detection → `aerosol_dust`, suppression → `liquid_droplet`). Genuine mismatch scores low but evaluated; unconfirmed fuel class is unevaluated.
+- `hardware_scale`: config table (Saffire project 1.0, CIR 0.6, MSG 0.5, other 0.4). Unconfirmed hardware is unevaluated.
+- `gravity_relevance`: config table per environment class. Orbital/normal envs score by regime; partial envs leave micro/normal records unevaluated with the no-partial-data flag.
+- `pillar_fit`: 1 on lens match; 0.2 on genuine mismatch (evaluated); unevaluated when pillars are unassigned.
 - Modeling readiness: quarters for numeric conditions, sized fuels, measurements, and non-empty varied variables.
-- Equipment relevance: `pillar_fit × hardware_scale × confidence_multiplier`.
+- Equipment relevance: `pillar_fit × hardware_scale` (null when either input is unevaluated).
+
+## Rollback
+
+Set `FLAMELAB_SCORING_ENABLED=off` and restart: `/api/rank` returns 503 `scoring_disabled` while every data endpoint keeps working. See `docs/RUNBOOK.md`.
 
 ## Lenses
 
@@ -76,7 +89,7 @@ A lens raises the weight of related factors:
 ## Additional scores
 
 - **Modeling readiness:** share of required modeling fields present (conditions, sample geometry, measurements, variables changed and held constant).
-- **Equipment relevance:** pillar fit weighted by hardware scale and data completeness, to highlight research informing next-generation detection, suppression and material selection.
+- **Equipment relevance:** `pillar_fit × hardware_scale` (null when either input is unevaluated), to highlight research informing next-generation detection, suppression and material selection.
 
 ## Example weights file
 
@@ -90,7 +103,6 @@ default:
   hardware_scale: 1
   gravity_relevance: 2
   pillar_fit: 2
-  data_completeness: 1
 lenses:
   prevention:
     oxygen_overlap: 4
