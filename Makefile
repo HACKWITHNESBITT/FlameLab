@@ -3,7 +3,7 @@
 .PHONY: test test-ui eval-si validate-records audit run-api run-ui check-gaps
 
 test:
-	@echo "TODO: backend unit + API contract tests (Dev 2, Day 1 PM)" && exit 1
+	.venv/bin/python -m pytest backend/tests -q
 
 test-ui:
 	@echo "TODO: frontend journey tests (Dev 5/6, Day 2)" && exit 1
