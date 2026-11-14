@@ -1,0 +1,73 @@
+# Environment profiles. Values from the brief are source: brief, everything else is
+# source: assumption and must stay visible in the UI. See docs/SCORING.md and
+# docs/BRIEF.md. Phase 0: confirm all assumptions, then re-run ranking tests.
+environments:
+  - id: spacesuit
+    label: Spacesuit (reference)
+    oxygen_percent: { min: 100, max: 100, source: brief }
+    pressure_psi: { min: 4.3, max: 4.3, source: brief }
+    airflow_cm_s: { min: 10, max: 30, source: assumption, note: "placeholder; confirm suit ventilation in Phase 0" }
+    gravity: suit_depends_on_phase_no_partial_data
+    gravity_note: "Gravity depends on mission phase (EVA, surface); PSI has no partial-gravity data."
+    pillars_emphasized: [prevention, suppression]
+    assumptions: ["airflow range is an assumption"]
+
+  - id: moon_base
+    label: Moon base
+    oxygen_percent: { min: 30, max: null, source: brief }
+    pressure_psi: { min: null, max: 10.2, source: brief }
+    airflow_cm_s: { min: 5, max: 20, source: assumption, note: "placeholder cabin ventilation; confirm in Phase 0" }
+    gravity: partial_gravity_no_data
+    gravity_note: "Moon gravity sits between microgravity and normal gravity; PSI has no partial-gravity data."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["airflow range is an assumption", "exact oxygen and pressure values to confirm"]
+
+  - id: pressurized_rover
+    label: Pressurized rover
+    oxygen_percent: { min: 30, max: null, source: brief }
+    pressure_psi: { min: null, max: 10.2, source: brief }
+    airflow_cm_s: { min: 5, max: 20, source: assumption, note: "placeholder; confirm rover ventilation in Phase 0" }
+    gravity: partial_gravity_no_data
+    gravity_note: "Same partial-gravity caveat as moon_base; split into its own id so values can diverge."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["airflow range is an assumption", "exact oxygen and pressure values to confirm"]
+
+  - id: spacecraft
+    label: Spacecraft
+    oxygen_percent: { min: 19, max: 23, source: assumption, note: "ISS-like placeholder; confirm in Phase 0" }
+    pressure_psi: { min: 14.0, max: 15.0, source: assumption, note: "ISS-like placeholder; confirm in Phase 0" }
+    airflow_cm_s: { min: 5, max: 20, source: assumption, note: "placeholder cabin ventilation; confirm in Phase 0" }
+    gravity: microgravity
+    gravity_note: "Orbital microgravity; use microgravity evidence directly."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["oxygen, pressure, and airflow are assumptions"]
+
+  - id: station
+    label: ISS / Station
+    oxygen_percent: { min: 19, max: 23, source: assumption, note: "ISS-like placeholder; confirm in Phase 0" }
+    pressure_psi: { min: 14.0, max: 15.0, source: assumption, note: "ISS-like placeholder; confirm in Phase 0" }
+    airflow_cm_s: { min: 5, max: 20, source: assumption, note: "placeholder cabin ventilation; confirm in Phase 0" }
+    gravity: microgravity
+    gravity_note: "Orbital microgravity; confirm in Phase 0 whether station differs from spacecraft."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["oxygen, pressure, and airflow are assumptions"]
+
+  - id: mars_base
+    label: Mars base
+    oxygen_percent: { min: 30, max: null, source: assumption, note: "Moon-like placeholder; confirm in Phase 0" }
+    pressure_psi: { min: null, max: 10.2, source: assumption, note: "Moon-like placeholder; confirm in Phase 0" }
+    airflow_cm_s: { min: 5, max: 20, source: assumption, note: "placeholder cabin ventilation; confirm in Phase 0" }
+    gravity: partial_gravity_no_data
+    gravity_note: "Mars gravity sits between microgravity and normal gravity; PSI has no partial-gravity data."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["oxygen, pressure, and airflow are assumptions"]
+
+  - id: earth_air
+    label: Earth air (reference)
+    oxygen_percent: { min: 20, max: 22, source: assumption, note: "reference value, not a design target" }
+    pressure_psi: { min: 14.7, max: 14.7, source: brief }
+    airflow_cm_s: { min: null, max: null, source: assumption, note: "no single reference airflow; treat as missing" }
+    gravity: normal_gravity
+    gravity_note: "Normal-gravity reference for bounding surface environments."
+    pillars_emphasized: [prevention, detection, suppression]
+    assumptions: ["oxygen range is a reference value", "airflow has no reference value"]

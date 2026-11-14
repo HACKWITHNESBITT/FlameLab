@@ -1,0 +1,24 @@
+# Scoring weights. Starting points for the team to tune; not derived from data.
+# See docs/SCORING.md. Lenses override the default weights they list.
+default:
+  oxygen_overlap: 3
+  pressure_overlap: 1
+  airflow_match: 2
+  fuel_relevance: 2
+  hardware_scale: 1
+  gravity_relevance: 2
+  pillar_fit: 2
+  data_completeness: 1
+lenses:
+  prevention:
+    oxygen_overlap: 4
+    fuel_relevance: 3
+    pillar_fit: 3
+  detection:
+    pillar_fit: 4
+    hardware_scale: 2
+    airflow_match: 3
+  suppression:
+    pillar_fit: 4
+    oxygen_overlap: 4
+    fuel_relevance: 3
