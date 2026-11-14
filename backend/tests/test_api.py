@@ -54,7 +54,7 @@ def test_conditions_real_groups_and_zones():
 
 
 def test_compare_export_gaps_shapes():
-    ids = ",".join([r["id"] for r in _roster()[:1]] * 2)
+    ids = ",".join(r["id"] for r in _roster()[:2])
     j = c.get("/api/compare", params={"ids": ids}).json()
     assert "similarities" in j and "differences" in j
     assert c.get("/api/compare", params={"ids": "bass"}).status_code == 400
@@ -67,3 +67,17 @@ def test_si_still_unavailable():
     r = c.get("/api/si/summary/bass")
     assert r.status_code == 503 and r.json()["error"]["code"] == "si_unavailable"
     assert c.post("/api/ask", json={"question": "hi"}).status_code == 503
+
+
+def test_list_includes_condition_ranges():
+    rows = {r["id"]: r for r in c.get("/api/investigations").json()}
+    bass_o2 = rows["bass"]["condition_ranges"]["oxygen_percent"]
+    assert bass_o2["status"] == "present" and bass_o2["min"] == 17 and bass_o2["max"] == 17
+    flex_o2 = rows["flex"]["condition_ranges"]["oxygen_percent"]
+    assert (flex_o2["min"], flex_o2["max"]) == (10, 50)
+    assert rows["saffire-i"]["condition_ranges"]["oxygen_percent"]["status"] == "missing"
+
+
+def test_compare_rejects_duplicate_ids():
+    r = c.get("/api/compare", params={"ids": "bass,bass"})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "invalid_ids"

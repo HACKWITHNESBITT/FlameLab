@@ -153,6 +153,8 @@ def compare(ids: str = Query("")):
     wanted = [i.strip() for i in ids.split(",") if i.strip()]
     if len(wanted) not in (2, 3):
         return err("invalid_ids", "Provide two or three ids", 400)
+    if len(set(wanted)) != len(wanted):
+        return err("invalid_ids", "Duplicate ids", 400)
     rows = {}
     for i in wanted:
         rec = store.get_investigation(DB_PATH, i)

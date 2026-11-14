@@ -70,6 +70,12 @@ def _bounds(field):
     return (None, None)
 
 
+def _present_block(lo, hi):
+    if lo is None and hi is None:
+        return {"min": None, "max": None, "status": "missing"}
+    return {"min": lo, "max": hi, "status": "present"}
+
+
 def build_db(records_dir: Path, db_path: Path) -> dict[str, int]:
     """Validate every record, then (re)build the database. Returns row counts."""
     paths = sorted(records_dir.glob("*.json"))
@@ -151,8 +157,17 @@ def list_investigations(db_path: Path, *, hardware=None, fuel_class=None, pillar
             """,
             {"hardware": hardware, "fuel": fuel_class, "grav": gravity,
              "o2min": oxygen_min, "o2max": oxygen_max}).fetchall()
+        agg = con.execute(
+            "SELECT investigation_id, MIN(o2_min), MAX(o2_max), MIN(p_min), MAX(p_max),"
+            " MIN(af_min), MAX(af_max) FROM test_conditions GROUP BY investigation_id"
+        ).fetchall()
     finally:
         con.close()
+    ranges = {a[0]: {"oxygen_percent": _present_block(a[1], a[2]),
+                     "pressure_psi": _present_block(a[3], a[4]),
+                     "airflow_cm_s": _present_block(a[5], a[6])} for a in agg}
+    _MISSING_ALL = {k: {"min": None, "max": None, "status": "missing"}
+                    for k in ("oxygen_percent", "pressure_psi", "airflow_cm_s")}
     out = []
     for r in rows:
         pillars = json.loads(r["pillars_json"])
@@ -163,7 +178,8 @@ def list_investigations(db_path: Path, *, hardware=None, fuel_class=None, pillar
         out.append({"id": r["id"], "name": r["name"], "psi_id": r["psi_id"],
                     "hardware": r["hardware"], "fuel_class": r["fuel_class"],
                     "pillars": pillars, "gravity_regime": r["gravity_regime"],
-                    "investigation_type": r["investigation_type"]})
+                    "investigation_type": r["investigation_type"],
+                    "condition_ranges": ranges.get(r["id"], _MISSING_ALL)})
     return out[offset:offset + limit]
 
 
