@@ -63,6 +63,13 @@ def test_compare_export_gaps_shapes():
     assert len(c.get("/api/gaps", params={"environment": "mars_base"}).json()) == 3
 
 
+def test_rank_kill_switch(monkeypatch):
+    monkeypatch.setenv("FLAMELAB_SCORING_ENABLED", "off")
+    r = c.get("/api/rank", params={"environment": "moon_base"})
+    assert r.status_code == 503 and r.json()["error"]["code"] == "scoring_disabled"
+    assert c.get("/api/investigations").status_code == 200  # data endpoints unaffected
+
+
 def test_si_still_unavailable():
     r = c.get("/api/si/summary/bass")
     assert r.status_code == 503 and r.json()["error"]["code"] == "si_unavailable"

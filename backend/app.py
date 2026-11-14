@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 import json
 from pathlib import Path
 from typing import Any
@@ -103,6 +104,8 @@ def investigation_detail(inv_id: str):
 
 @app.get("/api/rank")
 def rank(environment: str = "moon_base", lens: str = "all"):
+    if os.getenv("FLAMELAB_SCORING_ENABLED", "on").lower() not in ("1", "true", "yes", "on"):
+        return err("scoring_disabled", "Scoring engine disabled by operator flag", 503)
     if _env_or_none(environment) is None:
         return err("unknown_environment", f"Unknown environment: {environment}", 400)
     if lens not in ("all", "prevention", "detection", "suppression"):
