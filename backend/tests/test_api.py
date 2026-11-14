@@ -63,10 +63,14 @@ def test_compare_export_gaps_shapes():
     assert len(c.get("/api/gaps", params={"environment": "mars_base"}).json()) == 3
 
 
-def test_si_still_unavailable():
+def test_si_still_unavailable_without_key():
     r = c.get("/api/si/summary/bass")
     assert r.status_code == 503 and r.json()["error"]["code"] == "si_unavailable"
-    assert c.post("/api/ask", json={"question": "hi"}).status_code == 503
+    # Answerable question with no provider key configured.
+    assert c.post("/api/ask", json={"question": "Tell me about Saffire"}).status_code == 503
+    # Uncovered questions answer without any provider.
+    r = c.post("/api/ask", json={"question": "hi"})
+    assert r.status_code == 200 and not r.json()["covered"]
 
 
 def test_list_includes_condition_ranges():
