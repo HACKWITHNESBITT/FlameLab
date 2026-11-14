@@ -1,6 +1,6 @@
 """Record validator per docs/DATA_SCHEMA.md validation rules.
 
-Passes with a note when no records exist yet (Dev 1, Day 1).
+Passes with a note when no records exist yet.
 Lenient on scalar-vs-wrapped representation (Phase 0 open question);
 strict on presence, enums, ranges, and the no-partial-gravity rule.
 """
@@ -100,7 +100,7 @@ def validate(path):
 def main():
     paths = sorted(p for p in glob.glob("data/records/*.json"))
     if not paths:
-        print("validate-records: no records yet (Dev 1, Day 1).")
+        print("validate-records: no records yet.")
         return 0
     failed = False
     for path in paths:

@@ -1,7 +1,7 @@
 """Shape check for si/eval/questions.yaml (not the LLM eval itself).
 
 Asserts: >=20 cases, all six required types present, each case has
-id/type/question/expected. Full semantic eval is Dev 4 work (Day 2).
+id/type/question/expected. Full semantic eval lands with the SI layer.
 """
 import sys
 
