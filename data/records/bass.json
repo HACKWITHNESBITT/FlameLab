@@ -1,1 +1,408 @@
-{"acronym_expansion": "Burning and Suppression of Solids", "data_quality": {"source": {"doc": "curator assessment, 2026-11-14"}, "status": "read", "value": {"completeness": "partial — Glenn fact sheet only; PSI data package pending", "notes": ["psi_id, doi_citation, psi_url: confirm from PSI landing page", "oxygen and pressure ranges for flight tests: confirm from PSI package", "held-constant variables: confirm from PSI package"]}}, "doi_citation": "TBD", "earth_applications": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Earth Applications"}, "status": "read", "value": [{"application": "validation of combustion models for terrestrial problems (flames in normal gravity)", "source": "Glenn BASS fact sheet, Earth Applications section"}]}, "fuel_class": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": "solid"}, "fuels": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": [{"name": "SIBAL cotton-fiberglass fabric", "notes": "principal thin material; 41 fuel samples total", "phase": "solid", "shape": "thin flat sheet", "size": "12 cm long by 1 and 2 cm wide"}, {"name": "Nomex", "phase": "solid", "shape": "thin flat sheet", "size": "size not specified in fact sheet"}, {"name": "Ultem", "phase": "solid", "shape": "thin flat sheet", "size": "size not specified in fact sheet"}, {"name": "PMMA", "phase": "solid", "shape": "thick flat sheet", "size": "5 cm long by 1 cm wide by 1 and 2 mm thick"}, {"name": "wax-saturated fiberglass fabric", "phase": "solid", "shape": "thick flat sheet", "size": "5 cm long by 1 cm wide by 1 and 2 mm thick"}, {"name": "PMMA spheres", "notes": "axisymmetric; reignitable for multiple tests", "phase": "solid", "shape": "sphere", "size": "1 and 2 cm diameter"}, {"name": "paraffin and Japan wax candles in ceramic tube", "phase": "solid", "shape": "candle in tube", "size": "6 mm diameter by 25 mm long"}]}, "gravity_regime": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": "microgravity"}, "hardware": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": "MSG"}, "hardware_detail": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "value": "slightly modified SPICE hardware (small flow duct, igniter, nozzle, exchangeable fuel samples) in MSG"}, "id": "bass", "investigation_type": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": "microgravity"}, "measurements": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "value": [{"notes": "actual duct flow rate", "quantity": "airflow velocity", "sensor": "anemometer"}, {"notes": null, "quantity": "flame radiative output", "sensor": "radiometer"}, {"notes": "flame shape, spread rate, dynamics; sensor data overlaid on video", "quantity": "imagery", "sensor": "video and still cameras"}, {"notes": "0 to 500 cc/min nitrogen", "quantity": "suppressant flow rate", "sensor": "mass flow controller"}]}, "name": "BASS", "objectives": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Research Summary"}, "status": "read", "value": ["Test whether materials in microgravity with adequate ventilation burn as well as or better than in normal gravity under identical conditions", "Guide strategies for extinguishing accidental fires in microgravity", "Contribute to combustion models for fire detection and suppression system design"]}, "platform": "ISS", "project": null, "psi_id": "TBD", "related": ["bass-ii"], "relevance_tags": {"note": "tags assigned by curator from fact-sheet content", "source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "full document"}, "status": "inferred", "value": ["flammability_limits", "extinguishment", "modeling_data", "material_selection"]}, "safety_pillars": {"note": "suppression: nitrogen-extinguishment strategy link is explicit; prevention: performance-based material selection link is explicit; detection not claimed for BASS proper", "source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Space Applications"}, "status": "inferred", "value": ["prevention", "suppression"]}, "summary": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "full document"}, "status": "read", "value": "BASS burned 41 solid-fuel samples (fabrics, PMMA, wax candles) in a SPICE-derived flow duct in the MSG on the ISS over 89 test points, varying airflow and nitrogen suppressant flow to study flame spread and extinction in microgravity."}, "test_conditions": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "value": [{"airflow_cm_s": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "unit": "cm/s", "value": {"max": 50, "min": 5}}, "diluent": {"note": "supplied as a suppressant stream at 0 to 500 cc/min, not as a premixed atmosphere", "source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "value": "nitrogen"}, "gravity_level": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Detailed Research Description"}, "status": "read", "value": "microgravity"}, "ignition_method": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Protocols"}, "status": "read", "value": "hot-wire igniter"}, "label": "MSG flight tests (89 test points)", "oxygen_percent": {"status": "missing", "value": null}, "pressure_psi": {"status": "missing", "value": null}}, {"airflow_cm_s": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "figure caption"}, "status": "read", "unit": "cm/s", "value": 2}, "diluent": {"status": "missing", "value": null}, "gravity_level": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "figure caption"}, "status": "read", "value": "microgravity (drop tower, 0-g phase)"}, "ignition_method": {"status": "missing", "value": null}, "label": "Drop-tower PMMA sphere (reported example)", "oxygen_percent": {"source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "figure caption"}, "status": "read", "unit": "percent", "value": 17}, "pressure_psi": {"note": "original value 1 atm", "source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "figure caption"}, "status": "read", "unit": "psi", "value": 14.7}}]}, "variables": {"note": "held-constant parameters not specified in fact sheet; confirm from PSI package", "source": {"doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf", "section": "Operational Requirements and Protocols"}, "status": "read", "value": {"held_constant": [], "varied": ["fuel type, thickness, and geometry", "duct airflow velocity (5 to 50 cm/s)", "nitrogen suppressant flow rate (0 to 500 cc/min)"]}}}
+{
+  "acronym_expansion": "Burning and Suppression of Solids",
+  "data_quality": {
+    "source": {
+      "doc": "curator assessment, 2026-11-14"
+    },
+    "status": "read",
+    "value": {
+      "completeness": "partial — Glenn fact sheet only; PSI data package pending",
+      "notes": [
+        "psi_id, doi_citation, psi_url: confirm from PSI landing page",
+        "oxygen and pressure ranges for flight tests: confirm from PSI package",
+        "held-constant variables: confirm from PSI package"
+      ]
+    }
+  },
+  "doi_citation": "TBD",
+  "earth_applications": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Earth Applications"
+    },
+    "status": "read",
+    "value": [
+      {
+        "application": "validation of combustion models for terrestrial problems (flames in normal gravity)",
+        "source": "Glenn BASS fact sheet, Earth Applications section"
+      }
+    ]
+  },
+  "fuel_class": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Detailed Research Description"
+    },
+    "status": "read",
+    "value": "solid"
+  },
+  "fuels": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Detailed Research Description"
+    },
+    "status": "read",
+    "value": [
+      {
+        "name": "SIBAL cotton-fiberglass fabric",
+        "notes": "principal thin material; 41 fuel samples total",
+        "phase": "solid",
+        "shape": "thin flat sheet",
+        "size": "12 cm long by 1 and 2 cm wide"
+      },
+      {
+        "name": "Nomex",
+        "phase": "solid",
+        "shape": "thin flat sheet",
+        "size": "size not specified in fact sheet"
+      },
+      {
+        "name": "Ultem",
+        "phase": "solid",
+        "shape": "thin flat sheet",
+        "size": "size not specified in fact sheet"
+      },
+      {
+        "name": "PMMA",
+        "phase": "solid",
+        "shape": "thick flat sheet",
+        "size": "5 cm long by 1 cm wide by 1 and 2 mm thick"
+      },
+      {
+        "name": "wax-saturated fiberglass fabric",
+        "phase": "solid",
+        "shape": "thick flat sheet",
+        "size": "5 cm long by 1 cm wide by 1 and 2 mm thick"
+      },
+      {
+        "name": "PMMA spheres",
+        "notes": "axisymmetric; reignitable for multiple tests",
+        "phase": "solid",
+        "shape": "sphere",
+        "size": "1 and 2 cm diameter"
+      },
+      {
+        "name": "paraffin and Japan wax candles in ceramic tube",
+        "phase": "solid",
+        "shape": "candle in tube",
+        "size": "6 mm diameter by 25 mm long"
+      }
+    ]
+  },
+  "gravity_regime": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Detailed Research Description"
+    },
+    "status": "read",
+    "value": "microgravity"
+  },
+  "hardware": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Detailed Research Description"
+    },
+    "status": "read",
+    "value": "MSG"
+  },
+  "hardware_detail": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Operational Protocols"
+    },
+    "status": "read",
+    "value": "slightly modified SPICE hardware (small flow duct, igniter, nozzle, exchangeable fuel samples) in MSG"
+  },
+  "id": "bass",
+  "investigation_type": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Detailed Research Description"
+    },
+    "status": "read",
+    "value": "microgravity"
+  },
+  "measurements": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Operational Protocols"
+    },
+    "status": "read",
+    "value": [
+      {
+        "notes": "actual duct flow rate",
+        "quantity": "airflow velocity",
+        "sensor": "anemometer"
+      },
+      {
+        "notes": null,
+        "quantity": "flame radiative output",
+        "sensor": "radiometer"
+      },
+      {
+        "notes": "flame shape, spread rate, dynamics; sensor data overlaid on video",
+        "quantity": "imagery",
+        "sensor": "video and still cameras"
+      },
+      {
+        "notes": "0 to 500 cc/min nitrogen",
+        "quantity": "suppressant flow rate",
+        "sensor": "mass flow controller"
+      }
+    ]
+  },
+  "name": "BASS",
+  "objectives": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Research Summary"
+    },
+    "status": "read",
+    "value": [
+      "Test whether materials in microgravity with adequate ventilation burn as well as or better than in normal gravity under identical conditions",
+      "Guide strategies for extinguishing accidental fires in microgravity",
+      "Contribute to combustion models for fire detection and suppression system design"
+    ]
+  },
+  "platform": "ISS",
+  "project": null,
+  "psi_id": "TBD",
+  "related": [
+    "bass-ii"
+  ],
+  "relevance_tags": {
+    "note": "tags assigned by curator from fact-sheet content",
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "full document"
+    },
+    "status": "inferred",
+    "value": [
+      "flammability_limits",
+      "extinguishment",
+      "modeling_data",
+      "material_selection"
+    ]
+  },
+  "safety_pillars": {
+    "note": "suppression: nitrogen-extinguishment strategy link is explicit; prevention: performance-based material selection link is explicit; detection not claimed for BASS proper",
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Space Applications"
+    },
+    "status": "inferred",
+    "value": [
+      "prevention",
+      "suppression"
+    ]
+  },
+  "summary": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "full document"
+    },
+    "status": "read",
+    "value": "BASS burned 41 solid-fuel samples (fabrics, PMMA, wax candles) in a SPICE-derived flow duct in the MSG on the ISS over 89 test points, varying airflow and nitrogen suppressant flow to study flame spread and extinction in microgravity."
+  },
+  "test_conditions": {
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Operational Protocols"
+    },
+    "status": "read",
+    "value": [
+      {
+        "airflow_cm_s": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "Operational Protocols"
+          },
+          "status": "read",
+          "unit": "cm/s",
+          "value": {
+            "max": 50,
+            "min": 5
+          }
+        },
+        "diluent": {
+          "note": "supplied as a suppressant stream at 0 to 500 cc/min, not as a premixed atmosphere",
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "Operational Protocols"
+          },
+          "status": "read",
+          "value": "nitrogen"
+        },
+        "gravity_level": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "Detailed Research Description"
+          },
+          "status": "read",
+          "value": "microgravity"
+        },
+        "ignition_method": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "Operational Protocols"
+          },
+          "status": "read",
+          "value": "hot-wire igniter"
+        },
+        "label": "MSG flight tests (89 test points)",
+        "oxygen_percent": {
+          "status": "missing",
+          "value": null
+        },
+        "pressure_psi": {
+          "status": "missing",
+          "value": null
+        }
+      },
+      {
+        "airflow_cm_s": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "figure caption"
+          },
+          "status": "read",
+          "unit": "cm/s",
+          "value": 2
+        },
+        "diluent": {
+          "status": "missing",
+          "value": null
+        },
+        "gravity_level": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "figure caption"
+          },
+          "status": "read",
+          "value": "microgravity (drop tower, 0-g phase)"
+        },
+        "ignition_method": {
+          "status": "missing",
+          "value": null
+        },
+        "label": "Drop-tower PMMA sphere (reported example)",
+        "oxygen_percent": {
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "figure caption"
+          },
+          "status": "read",
+          "unit": "percent",
+          "value": 17
+        },
+        "pressure_psi": {
+          "note": "original value 1 atm",
+          "source": {
+            "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+            "section": "figure caption"
+          },
+          "status": "read",
+          "unit": "psi",
+          "value": 14.7
+        }
+      },
+      {
+        "label": "Acrylic sphere burn (guide-reported example)",
+        "oxygen_percent": {
+          "source": {
+            "doc": "data/sources/guide/researchers-guide-combustion.pdf",
+            "section": "Figure 11 caption"
+          },
+          "status": "read",
+          "unit": "percent",
+          "value": 17
+        },
+        "diluent": {
+          "status": "missing",
+          "value": null
+        },
+        "pressure_psi": {
+          "status": "missing",
+          "value": null
+        },
+        "airflow_cm_s": {
+          "source": {
+            "doc": "data/sources/guide/researchers-guide-combustion.pdf",
+            "section": "Figure 11 caption"
+          },
+          "status": "read",
+          "unit": "cm/s",
+          "value": 12
+        },
+        "ignition_method": {
+          "status": "missing",
+          "value": null
+        },
+        "gravity_level": {
+          "source": {
+            "doc": "data/sources/guide/researchers-guide-combustion.pdf",
+            "section": "Figure 11 caption"
+          },
+          "status": "read",
+          "value": "microgravity"
+        }
+      },
+      {
+        "label": "Opposed-flow fabric burn (guide-reported example)",
+        "oxygen_percent": {
+          "status": "missing",
+          "value": null
+        },
+        "diluent": {
+          "status": "missing",
+          "value": null
+        },
+        "pressure_psi": {
+          "status": "missing",
+          "value": null
+        },
+        "airflow_cm_s": {
+          "note": "original phrasing: flow decreased in steps from 10 cm/s down to less than 1 cm/s",
+          "source": {
+            "doc": "data/sources/guide/researchers-guide-combustion.pdf",
+            "section": "Figure 12 caption"
+          },
+          "status": "read",
+          "unit": "cm/s",
+          "value": {
+            "min": 1,
+            "max": 10
+          }
+        },
+        "ignition_method": {
+          "status": "missing",
+          "value": null
+        },
+        "gravity_level": {
+          "source": {
+            "doc": "data/sources/guide/researchers-guide-combustion.pdf",
+            "section": "Figure 12 caption"
+          },
+          "status": "read",
+          "value": "microgravity"
+        }
+      }
+    ]
+  },
+  "variables": {
+    "note": "held-constant parameters not specified in fact sheet; confirm from PSI package",
+    "source": {
+      "doc": "data/sources/glenn/burning-and-suppression-of-solids-bass.pdf",
+      "section": "Operational Requirements and Protocols"
+    },
+    "status": "read",
+    "value": {
+      "held_constant": [],
+      "varied": [
+        "fuel type, thickness, and geometry",
+        "duct airflow velocity (5 to 50 cm/s)",
+        "nitrogen suppressant flow rate (0 to 500 cc/min)"
+      ]
+    }
+  }
+}
