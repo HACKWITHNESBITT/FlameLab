@@ -1,12 +1,20 @@
 """Transparent weighted-sum scoring engine.
 
-Entry point: score_record(record, env, weights, lens). All factors return 0..1.
-Missing inputs score 0 with a flag — never silently filled. Exact formulas are
-documented in docs/SCORING.md ("Factor formulas (v1)"); this module implements
-that section verbatim.
+Evidence policy (strict): a factor with insufficient input is UNEVALUATED
+(score None with a reason), never a number. Unevaluated factors are excluded
+from the reported score, contribute 0 to the ordering rank_value, and are
+listed explicitly. Completeness is reported separately and never multiplies
+the score, so removing evidence can never improve a record's rank_value.
+Formulas: docs/SCORING.md ("Factor formulas").
 """
 
 from __future__ import annotations
+
+from pathlib import Path
+
+import yaml
+
+CONFIG_PATH = Path(__file__).resolve().parent / "config" / "scoring_tables.yaml"
 
 FACTOR_FIELDS = {
     "oxygen_overlap": ["test_conditions.oxygen_percent"],
@@ -16,25 +24,19 @@ FACTOR_FIELDS = {
     "hardware_scale": ["hardware", "fuels.size"],
     "gravity_relevance": ["gravity_regime"],
     "pillar_fit": ["safety_pillars"],
-    "data_completeness": [],
 }
-
-# v1 heuristic tables (documented; pending domain-expert tuning).
-FUEL_BY_LENS = {
-    "all": {"solid": 0.8, "gas": 0.7, "liquid_droplet": 0.7, "aerosol_dust": 0.6, "other": 0.4},
-    "prevention": {"solid": 1.0, "gas": 0.6, "liquid_droplet": 0.5, "aerosol_dust": 0.3, "other": 0.2},
-    "detection": {"solid": 0.4, "gas": 0.5, "liquid_droplet": 0.4, "aerosol_dust": 1.0, "other": 0.3},
-    "suppression": {"solid": 0.7, "gas": 0.6, "liquid_droplet": 1.0, "aerosol_dust": 0.3, "other": 0.2},
-}
-HARDWARE_SCALE = {"CIR": 0.6, "MSG": 0.5, "other": 0.4}
-GRAVITY_SCORE = {
-    "microgravity": {"microgravity": 1.0, "mimicked_partial": 0.8, "normal_gravity": 0.5},
-    "normal_gravity": {"microgravity": 0.6, "mimicked_partial": 0.7, "normal_gravity": 1.0},
-    "partial": {"microgravity": 0.6, "mimicked_partial": 0.7, "normal_gravity": 0.6},
-}
+FACTOR_NAMES = list(FACTOR_FIELDS)
 COMPLETENESS_FIELDS = ["hardware", "gravity_regime", "fuel_class", "investigation_type",
                        "fuels", "test_conditions", "variables", "measurements",
                        "objectives", "summary"]
+
+
+def load_tables(path: Path = CONFIG_PATH) -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+TABLES = load_tables()
 
 
 def _val(field, default=None):
@@ -115,7 +117,7 @@ def _groups(record):
 def oxygen_overlap(record, env):
     ranges = _group_bounds(_groups(record), "oxygen_percent")
     if not ranges:
-        return 0.0, ["oxygen missing"]
+        return None, ["oxygen missing"]
     e = _cap((env["oxygen_percent"].get("min"), env["oxygen_percent"].get("max")), 0.0, 100.0)
     if e[1] <= e[0]:
         return _point_score(ranges, e[0], 100.0), []
@@ -125,7 +127,7 @@ def oxygen_overlap(record, env):
 def pressure_overlap(record, env):
     ranges = _group_bounds(_groups(record), "pressure_psi")
     if not ranges:
-        return 0.0, ["pressure missing"]
+        return None, ["pressure missing"]
     e = _cap((env["pressure_psi"].get("min"), env["pressure_psi"].get("max")), 0.0, 20.0)
     if e[1] <= e[0]:
         return _point_score(ranges, e[0], 20.0), []
@@ -135,10 +137,10 @@ def pressure_overlap(record, env):
 def airflow_match(record, env):
     eraw = (env["airflow_cm_s"].get("min"), env["airflow_cm_s"].get("max"))
     if eraw == (None, None):
-        return 0.5, ["no reference airflow for this environment"]
+        return None, ["no reference airflow for this environment"]
     ranges = _group_bounds(_groups(record), "airflow_cm_s")
     if not ranges:
-        return 0.0, ["airflow missing"]
+        return None, ["airflow missing"]
     e = (eraw[0] if eraw[0] is not None else 0.0,
          eraw[1] if eraw[1] is not None else eraw[0])
     if _intersection_measure(ranges, e) > 0:
@@ -152,19 +154,19 @@ def airflow_match(record, env):
 
 def fuel_relevance(record, env, lens):
     fc = _val(record.get("fuel_class"))
-    table = FUEL_BY_LENS.get(lens, FUEL_BY_LENS["all"])
+    table = TABLES["fuel_by_lens"].get(lens, TABLES["fuel_by_lens"]["all"])
     if fc not in table:
-        return 0.0, ["fuel class unconfirmed"]
+        return None, ["fuel class unconfirmed"]
     return table[fc], []
 
 
 def hardware_scale(record, env):
-    if (record.get("project")) == "Saffire":
-        return 1.0, []
+    if record.get("project") == "Saffire":
+        return TABLES["saffire_project_score"], []
     hw = _val(record.get("hardware"))
-    if hw not in HARDWARE_SCALE:
-        return 0.0, ["hardware unconfirmed"]
-    return HARDWARE_SCALE[hw], []
+    if hw not in TABLES["hardware_scale"]:
+        return None, ["hardware unconfirmed"]
+    return TABLES["hardware_scale"][hw], []
 
 
 def _gravity_class(env):
@@ -179,13 +181,14 @@ def _gravity_class(env):
 def gravity_relevance(record, env):
     gr = _val(record.get("gravity_regime"))
     cls = _gravity_class(env)
-    table = GRAVITY_SCORE[cls]
+    table = TABLES["gravity_score"][cls]
     if gr not in table:
-        return 0.0, ["gravity regime unconfirmed"]
+        if cls == "partial":
+            return None, ["partial gravity: no Moon/Mars-g data, micro/normal records unevaluated"]
+        return None, ["gravity regime unconfirmed"]
     flags = []
     if cls == "partial":
-        flags.append("partial gravity: PSI has no Moon/Mars-g data; "
-                     "microgravity and normal-gravity results bound it")
+        flags.append("mimicked gravity is an analogue, not a Moon/Mars measurement")
     return table[gr], flags
 
 
@@ -194,45 +197,45 @@ def pillar_fit(record, env, lens):
     if lens == "all":
         if pillars:
             return 1.0, []
-        return 0.3, ["pillars unassigned"]
+        return None, ["pillars unassigned"]
+    if not pillars:
+        return None, ["pillars unassigned"]
     if lens in pillars:
         return 1.0, []
     return 0.2, []
 
 
-def data_completeness(record, env):
-    if not COMPLETENESS_FIELDS:
-        return 0.0, []
+def data_completeness(record):
     read = sum(1 for f in COMPLETENESS_FIELDS if _status(record.get(f)) == "read")
-    return round(read / len(COMPLETENESS_FIELDS), 4), []
+    return round(read / len(COMPLETENESS_FIELDS), 4)
 
 
 def modeling_readiness(record):
-    parts = []
     conds = _groups(record)
-    parts.append(any(_group_bounds([g], "oxygen_percent") or _group_bounds([g], "pressure_psi")
-                     or _group_bounds([g], "airflow_cm_s") for g in conds))
-    fuels = _val(record.get("fuels"), []) or []
-    parts.append(any(isinstance(f, dict) and f.get("size")
-                     and "not specified" not in str(f.get("size")) for f in fuels))
-    parts.append(bool(_val(record.get("measurements"), []) or []))
-    variables = _val(record.get("variables"), {}) or {}
-    parts.append(bool(variables.get("varied")))
+    parts = [
+        any(_group_bounds([g], "oxygen_percent") or _group_bounds([g], "pressure_psi")
+            or _group_bounds([g], "airflow_cm_s") for g in conds),
+        any(isinstance(f, dict) and f.get("size")
+            and "not specified" not in str(f.get("size"))
+            for f in (_val(record.get("fuels"), []) or [])),
+        bool(_val(record.get("measurements"), []) or []),
+        bool((_val(record.get("variables"), {}) or {}).get("varied")),
+    ]
     return round(sum(1 for p in parts if p) / 4, 4)
 
 
-def equipment_relevance(pillar_fit_score, hardware_scale_score, multiplier):
-    return round(pillar_fit_score * hardware_scale_score * multiplier, 4)
-
-
-def confidence_multiplier(completeness):
-    return round(0.5 + 0.5 * completeness, 4)
-
-
 def score_record(record, env, weights, lens="all"):
-    """Score one record. Returns score, breakdown, flags, readiness scores."""
-    w = dict(weights["default"])
-    w.update(weights.get("lenses", {}).get(lens, {}))
+    """Score one record.
+
+    Returns score (mean over evaluated factors only), rank_value (weighted
+    sum over ALL weights with unevaluated contributing 0 — this is what
+    orders the ranking, so less evidence can never outrank more), and a
+    separate evidence block. Records with no evaluated factors get
+    insufficient_data and sort last.
+    """
+    w = {k: weights["default"][k] for k in FACTOR_NAMES}
+    w.update({k: v for k, v in weights.get("lenses", {}).get(lens, {}).items()
+              if k in FACTOR_NAMES})
     total = sum(w.values())
     fns = {
         "oxygen_overlap": lambda: oxygen_overlap(record, env),
@@ -242,28 +245,49 @@ def score_record(record, env, weights, lens="all"):
         "hardware_scale": lambda: hardware_scale(record, env),
         "gravity_relevance": lambda: gravity_relevance(record, env),
         "pillar_fit": lambda: pillar_fit(record, env, lens),
-        "data_completeness": lambda: data_completeness(record, env),
     }
-    factors, flags = [], []
-    for name in w:
-        score, fflags = fns[name]()
-        score = max(0.0, min(1.0, float(score)))
-        factors.append({"factor": name, "score": round(score, 4), "weight": w[name],
-                        "contribution": round(w[name] * score / total, 4),
-                        "fields": FACTOR_FIELDS[name]})
+    factors, flags, reasons = [], [], {}
+    for name in FACTOR_NAMES:
+        s, fflags = fns[name]()
+        entry = {"factor": name,
+                 "score": (None if s is None else round(max(0.0, min(1.0, float(s))), 4)),
+                 "weight": w[name],
+                 "contribution": round(w[name] * (s or 0.0) / total, 4),
+                 "fields": FACTOR_FIELDS[name],
+                 "status": "evaluated" if s is not None else "insufficient_data"}
+        factors.append(entry)
         flags.extend(fflags)
-    raw = round(sum(f["contribution"] for f in factors), 4)
-    completeness = next(f["score"] for f in factors if f["factor"] == "data_completeness")
-    mult = confidence_multiplier(completeness)
-    pf = next(f["score"] for f in factors if f["factor"] == "pillar_fit")
-    hs = next(f["score"] for f in factors if f["factor"] == "hardware_scale")
-    return {"id": record.get("id"), "score": round(raw * mult, 4), "raw_score": raw,
-            "confidence_multiplier": mult,
-            "modeling_readiness": modeling_readiness(record),
-            "equipment_relevance": equipment_relevance(pf, hs, mult),
-            "factors": factors, "flags": sorted(set(flags))}
+        reasons[name] = "; ".join(fflags) if fflags else "no reason recorded"
+    evaluated = [f for f in factors if f["score"] is not None]
+    if not evaluated:
+        score, rank_value, insufficient = None, 0.0, True
+    else:
+        ew = sum(f["weight"] for f in evaluated)
+        score = round(sum(f["weight"] * f["score"] for f in evaluated) / ew, 4)
+        rank_value = round(sum(f["contribution"] for f in factors), 4)
+        insufficient = False
+    by_name = {f["factor"]: f["score"] for f in factors}
+    pf, hs = by_name["pillar_fit"], by_name["hardware_scale"]
+    equipment = None if pf is None or hs is None else round(pf * hs, 4)
+    return {
+        "id": record.get("id"),
+        "score": score,
+        "rank_value": rank_value,
+        "insufficient_data": insufficient,
+        "evidence": {
+            "completeness": data_completeness(record),
+            "coverage": round(sum(f["weight"] for f in evaluated) / total, 4),
+            "evaluated": [f["factor"] for f in evaluated],
+            "unevaluated": [{"factor": f["factor"], "reason": reasons[f["factor"]]}
+                            for f in factors if f["score"] is None],
+        },
+        "modeling_readiness": modeling_readiness(record),
+        "equipment_relevance": equipment,
+        "factors": factors,
+        "flags": sorted(set(flags)),
+    }
 
 
 def score_all(records, env, weights, lens="all"):
     return sorted((score_record(r, env, weights, lens) for r in records),
-                  key=lambda r: r["score"], reverse=True)
+                  key=lambda r: (-r["rank_value"], r["id"]))

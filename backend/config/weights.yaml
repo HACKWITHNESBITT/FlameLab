@@ -8,7 +8,6 @@ default:
   hardware_scale: 1
   gravity_relevance: 2
   pillar_fit: 2
-  data_completeness: 1
 lenses:
   prevention:
     oxygen_overlap: 4

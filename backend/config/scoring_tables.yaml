@@ -1,0 +1,62 @@
+# Scoring heuristic tables (v1). These are engineering judgments, NOT derived
+# values. Every table needs domain-expert review before its status flips.
+# See docs/SCORING.md ("Factor formulas").
+provenance:
+  owner: scoring-track
+  status: unreviewed
+  reviewed_by: null
+  reviewed_on: null
+
+# Fuel-class relevance per lens. Rationale: prevention cares about what can
+# ignite (solids first); detection cares about what is sensed (aerosols/smoke
+# first); suppression cares about what is extinguished (droplets first, the
+# best-studied suppression science); "all" is a neutral middle.
+fuel_by_lens:
+  all:
+    solid: 0.8
+    gas: 0.7
+    liquid_droplet: 0.7
+    aerosol_dust: 0.6
+    other: 0.4
+  prevention:
+    solid: 1.0
+    gas: 0.6
+    liquid_droplet: 0.5
+    aerosol_dust: 0.3
+    other: 0.2
+  detection:
+    solid: 0.4
+    gas: 0.5
+    liquid_droplet: 0.4
+    aerosol_dust: 1.0
+    other: 0.3
+  suppression:
+    solid: 0.7
+    gas: 0.6
+    liquid_droplet: 1.0
+    aerosol_dust: 0.3
+    other: 0.2
+
+# Hardware scale relevance. Rationale: Saffire is the only meter-scale test;
+# CIR/MSG rigs are bench scale; ground modeling has no physical scale.
+hardware_scale:
+  CIR: 0.6
+  MSG: 0.5
+  other: 0.4
+saffire_project_score: 1.0
+
+# Gravity relevance. Rationale: direct-regime evidence scores 1.0; cross-regime
+# evidence scores lower as bounding context; in partial-gravity environments
+# micro/normal records are NOT evidence (unevaluated, flagged) because PSI has
+# no partial-gravity data — only mimicked_partial counts, as an analogue.
+gravity_score:
+  microgravity:
+    microgravity: 1.0
+    mimicked_partial: 0.8
+    normal_gravity: 0.5
+  normal_gravity:
+    microgravity: 0.6
+    mimicked_partial: 0.7
+    normal_gravity: 1.0
+  partial:
+    mimicked_partial: 0.7
