@@ -262,7 +262,7 @@ def si_summary(inv_id: str, environment: str = "moon_base"):
         out = si_provider.generate("summary", {"record": rec, "environment": env},
                                    json_keys=("findings", "interpretation", "gaps"))
     except si_provider.NoProviderError:
-        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+        return err("si_unavailable", "SI provider unavailable; configure MODEL_API_KEY", 503)
     findings, ok_f = _verify_items(out.get("findings"))
     interp, ok_i = _verify_items(out.get("interpretation"))
     passed = ok_f and ok_i and bool(findings)
@@ -292,7 +292,7 @@ def si_compare(payload: dict):
         out = si_provider.generate("comparison", {"records": recs, "environment": env},
                                    json_keys=("similarities", "differences"))
     except si_provider.NoProviderError:
-        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+        return err("si_unavailable", "SI provider unavailable; configure MODEL_API_KEY", 503)
     sims, ok_s = _verify_items(out.get("similarities"))
     diffs, ok_d = _verify_items(out.get("differences"))
     passed = ok_s and ok_d and bool(sims or diffs)
@@ -327,18 +327,23 @@ def ask(payload: dict):
         out = si_provider.generate("ask", {"question": question, "records": top},
                                    json_keys=("answer",))
     except si_provider.NoProviderError:
-        return err("si_unavailable", "SI provider unavailable; configure ANTHROPIC_API_KEY", 503)
+        return err("si_unavailable", "SI provider unavailable; configure MODEL_API_KEY", 503)
     v = verifier.verify_text(out.get("answer", ""), _get_record)
-    if not v["passed"] or not v["text"]:
+    if not v["text"]:
         _audit({"endpoint": "ask", "question": question, "passed": False, "kind": "unverified"})
         return {"answer": "No verified answer could be produced from the available data.",
                 "citations": [], "covered": False, "missing": ["verified statement"],
                 "verification": {"passed": False}}
     cites = sorted(f"rec:{r}#{p}" for r, p in verifier.parse_citations(v["text"]))
-    _audit({"endpoint": "ask", "question": question, "passed": True,
+    answer = v["text"]
+    env = _env_or_none(payload.get("environment")) if payload.get("environment") else None
+    if env is not None and str(env.get("gravity", "")).endswith("no_data"):
+        answer += (" [System note: PSI has no partial-gravity data, so these results "
+                   "cannot confirm behavior at partial gravity.]")
+    _audit({"endpoint": "ask", "question": question, "passed": v["passed"],
             "kind": "answerable", "sources": cites})
-    return {"answer": v["text"], "citations": cites, "covered": True, "missing": [],
-            "verification": {"passed": True}}
+    return {"answer": answer, "citations": cites, "covered": True, "missing": [],
+            "verification": {"passed": v["passed"]}}
 
 
 @app.get("/api/export")

@@ -12,7 +12,7 @@ import re
 
 TOKEN = re.compile(r"\[rec:([A-Za-z0-9_.-]+)#([A-Za-z0-9_.]+)\]")
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
-NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
+NUMBER = re.compile(r"(?<!\d)-?\d+(?:\.\d+)?")
 
 
 def parse_citations(text: str) -> list[tuple[str, str]]:
@@ -72,12 +72,25 @@ def _norm(v) -> str:
     return ("%g" % f).rstrip("0").rstrip(".") if "." in "%g" % f else "%g" % f
 
 
+def _numbers_in_field(field) -> set[str]:
+    """Numbers anywhere in the field object: value plus unit/note, which hold
+    original values and conversions the curator recorded as evidence."""
+    if isinstance(field, dict) and "value" in field:
+        return (_numbers_in(field["value"]) | _numbers_in(field.get("unit", ""))
+                | _numbers_in(field.get("note", "")))
+    return _numbers_in(field)
+
+
 def verify_sentence(sentence: str, get_record) -> tuple[bool, list[str]]:
-    """Returns (ok, failure reasons). get_record(id) -> record dict or None."""
+    """Returns (ok, failure reasons). get_record(id) -> record dict or None.
+
+    Every citation must resolve, and every number must appear in AT LEAST ONE
+    cited field (a multi-citation sentence may draw numbers from each side).
+    """
     cites = parse_citations(sentence)
     if not cites:
         return False, ["no citation token"]
-    failures = []
+    failures, resolved = [], []
     for rid, path in cites:
         rec = get_record(rid)
         if rec is None:
@@ -87,15 +100,28 @@ def verify_sentence(sentence: str, get_record) -> tuple[bool, list[str]]:
         if not found:
             failures.append(f"unknown field: {rid}#{path}")
             continue
-        allowed = _numbers_in(_unwrap(field))
-        for n in NUMBER.findall(TOKEN.sub("", sentence)):
-            if _norm(n) not in allowed:
-                failures.append(f"number {n} not in {rid}#{path}")
+        resolved.append(field)
+    if failures:
+        return False, failures
+    allowed: set[str] = set()
+    for f in resolved:
+        allowed |= _numbers_in_field(f)
+    bare = TOKEN.sub("", sentence)
+    bare = re.sub(r"[A-Za-z]+-\d+(?:\.\d+)?", "", bare)  # FLEX-2 is a name, not -2
+    for n in NUMBER.findall(bare):
+        if _norm(n) not in allowed:
+            cites_str = ", ".join(f"{r}#{p}" for r, p in cites)
+            failures.append(f"number {n} not in cited fields ({cites_str})")
     return (not failures), failures
 
 
 def verify_text(text: str, get_record) -> dict:
     """Verify each sentence; drop failures. Returns cleaned text + report."""
+    if not isinstance(text, str):
+        return {"text": "", "kept": 0, "dropped": 1,
+                "failures": [{"sentence": "(non-string model output)",
+                              "reasons": ["non-string model output"]}],
+                "passed": False}
     kept, dropped = [], []
     for s in split_sentences(text):
         ok, reasons = verify_sentence(s, get_record)

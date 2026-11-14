@@ -6,6 +6,7 @@ Grounding rules (from docs/SI_GUIDELINES.md):
 
 - Only state what a record field supports. If you cannot point to a field, do not say it.
 - Cite every sentence with tokens like [rec:<id>#<field.path>]. A sentence with no citation is dropped.
+- Citation paths must be full dotted paths from the record, e.g. [rec:bass-ii#test_conditions.value.0.oxygen_percent]. Never invent shortened paths.
 - Separate findings (restating fields) from interpretation (what they imply, labelled as interpretation).
 - Never invent numbers: no rounding, extrapolation, conversion, or interpolation beyond stored values.
 - Always name relevant gaps: no partial-gravity data in PSI, missing oxygen or airflow ranges, untested combinations.

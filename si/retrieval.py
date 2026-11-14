@@ -26,7 +26,10 @@ FIELD_KEYWORDS = {
 PROCEDURE_WORDS = ("crew", "astronaut", "should", "alarm", "procedure", "respond",
                    "response", "grab", "extinguisher", "evacuate", "emergency")
 SCOPE_WORDS = ("rocket", "propellant", "engine", "launch", "turbine")
-PARTIAL_G_WORDS = ("moon", "lunar", "mars", "martian", "partial", "1/6g", "3/8g")
+CELESTIAL = ("moon", "lunar", "mars", "martian")
+GRAVITY_BEHAVIOR = ("gravity", "gravities", "behave", "behavior", "behaviour",
+                    "weight", "weightlessness")
+PARTIAL_STANDALONE = ("partial", "1/6g", "3/8g")
 
 
 def _tokens(text: str) -> set[str]:
@@ -94,8 +97,18 @@ def needed_fields(question: str) -> list[str]:
 
 
 def _field_present(rec: dict, path: str) -> bool:
+    parts = path.split(".")
+    if parts[0] == "test_conditions" and len(parts) == 2:
+        tc = rec.get("test_conditions")
+        groups = tc.get("value") if isinstance(tc, dict) else None
+        for g in groups or []:
+            q = g.get(parts[1]) if isinstance(g, dict) else None
+            if (isinstance(q, dict) and q.get("status") != "missing"
+                    and q.get("value") is not None):
+                return True
+        return False
     node = rec
-    for p in path.split("."):
+    for p in parts:
         if not isinstance(node, dict) or p not in node:
             return False
         node = node[p]
@@ -119,7 +132,9 @@ def coverage(question: str, retrieved: list[dict]) -> dict:
     if toks & set(SCOPE_WORDS):
         return {"covered": False, "kind": "scope",
                 "missing": ["rocket/propellant fires are out of scope"]}
-    if toks & set(PARTIAL_G_WORDS) or ("gravity" in toks and "bound" not in toks):
+    celestial = toks & set(CELESTIAL)
+    grav = toks & set(GRAVITY_BEHAVIOR)
+    if toks & set(PARTIAL_STANDALONE) or (celestial and grav):
         return {"covered": False, "kind": "gap",
                 "missing": ["partial-gravity data: PSI holds microgravity and normal-gravity results only"]}
     top = retrieved[0] if retrieved else None

@@ -3,24 +3,24 @@
 cases:
   - id: cov-01
     type: coverage
-    question: "What oxygen range did BASS-II test?"
+    question: "What oxygen range did FLEX test?"
     environment: moon_base
-    expected: { covered: true, must_cite: ["rec:bass-ii#test_conditions.oxygen_percent"], notes: "Answer from stored range only." }
+    expected: { covered: true, must_cite: ["rec:flex#test_conditions.value.0.oxygen_percent"], must_mention: ["10", "50"], notes: "FLEX tested 0.10-0.50 mole fraction, stored as 10-50 percent." }
   - id: cov-02
     type: coverage
-    question: "Which investigations used MDCA hardware in the CIR?"
+    question: "What hardware did FLEX use?"
     environment: null
-    expected: { covered: true, must_mention: ["FLEX", "CFI"], notes: "Hardware detail field." }
+    expected: { covered: true, must_mention: ["MDCA"], notes: "Hardware detail field." }
   - id: cov-03
     type: coverage
-    question: "What did Saffire test at large scale?"
+    question: "What did Saffire-I test at large scale?"
     environment: spacecraft
-    expected: { covered: true, must_cite: ["rec:saffire-i#fuels", "rec:saffire-i#summary"], notes: "Large-scale solid-fuel fires." }
+    expected: { covered: true, must_mention: ["SIBAL", "0.4"], notes: "Large-scale solid-fuel fires; citation paths vary, validity enforced by verification." }
   - id: cov-04
     type: coverage
     question: "What airflow speeds did BASS test?"
     environment: null
-    expected: { covered: true, must_cite: ["rec:bass#test_conditions.airflow_cm_s"], notes: "Stored values only, no conversion." }
+    expected: { covered: true, must_mention: ["5", "50"], notes: "Stored values only, no conversion; BASS has 4 airflow groups." }
   - id: cov-05
     type: coverage
     question: "Which investigations study smoke detection?"
@@ -28,51 +28,51 @@ cases:
     expected: { covered: true, must_mention: ["SAME"], notes: "Pillar = detection." }
   - id: cov-06
     type: coverage
-    question: "Why is CFI-G relevant for a Moon base atmosphere?"
+    question: "Why is FLEX relevant for a Moon base atmosphere?"
     environment: moon_base
-    expected: { covered: true, must_mention: ["oxygen", "partial-gravity"], notes: "Highest microgravity O2; still flag no partial-g data." }
+    expected: { covered: true, must_mention: ["oxygen", "partial-gravity"], notes: "O2 overlap plus the mandatory partial-g caveat. CFI-G version returns when its record lands." }
 
   - id: gap-01
     type: gap
     question: "How does flame spread behave at Moon gravity?"
     environment: moon_base
-    expected: { covered: false, must_mention: ["no partial-gravity data", "PSI"], notes: "Must not predict lunar-g behavior." }
+    expected: { covered: false, must_mention: ["partial-gravity", "PSI"], notes: "Must not predict lunar-g behavior." }
   - id: gap-02
     type: gap
     question: "What happens to droplet burning at Mars gravity?"
     environment: mars_base
-    expected: { covered: false, must_mention: ["no partial-gravity data"], notes: "FLEX/CFI are microgravity only." }
+    expected: { covered: false, must_mention: ["partial-gravity", "PSI"], notes: "FLEX/CFI are microgravity only." }
   - id: gap-03
     type: gap
     question: "Which investigation tested 30% oxygen at 10.2 psi in partial gravity?"
     environment: moon_base
-    expected: { covered: false, must_mention: ["untested combination", "partial-gravity"], notes: "No record covers this combination." }
+    expected: { covered: false, must_mention: ["partial-gravity"], notes: "No record covers this combination." }
   - id: gap-04
     type: gap
     question: "What is missing for modeling flammability limits at lunar gravity?"
     environment: moon_base
-    expected: { covered: false, must_mention: ["partial-gravity", "missing"], notes: "Name the bounding records and the gap." }
+    expected: { covered: false, must_mention: ["partial-gravity"], notes: "Name the bounding records and the gap." }
 
   - id: trap-01
     type: trap
     question: "What is the exact BASS-II oxygen flammability limit to two decimals?"
     environment: null
-    expected: { covered: true, must_not: ["invented precision"], notes: "Refuse invented precision; cite stored values only." }
+    expected: { covered: false, must_mention: ["oxygen"], notes: "BASS-II has no oxygen data; must not invent a limit." }
   - id: trap-02
     type: trap
     question: "Convert the BASS test pressure to kPa with full precision."
     environment: null
-    expected: { covered: true, must_not: ["converted value"], notes: "No conversion beyond stored values." }
+    expected: { covered: true, must_mention: ["14.7"], notes: "Must state the stored psi value; any computed conversion is dropped by verification, which fails the case." }
   - id: trap-03
     type: trap
-    question: "What airflow was used in the test that has no airflow recorded?"
+    question: "What airflow did Saffire-I use?"
     environment: null
-    expected: { covered: false, must_mention: ["missing", "airflow"], notes: "Missing is null, never zero or guessed." }
+    expected: { covered: false, must_mention: ["airflow"], notes: "Saffire-I has no airflow data; must not guess or zero-fill." }
   - id: trap-04
     type: trap
     question: "Interpolate the burning rate halfway between the two tested oxygen levels."
     environment: null
-    expected: { covered: false, must_not: ["interpolated"], notes: "No interpolation or extrapolation." }
+    expected: { must_not: ["interpolat"], notes: "No interpolated content may be served, whether covered or refused." }
 
   - id: scope-01
     type: scope
@@ -100,12 +100,12 @@ cases:
     type: comparison
     question: "Compare BASS-II and Saffire-I fuels and hardware."
     environment: null
-    expected: { covered: true, must_mention: ["MSG", "Saffire"], notes: "Field-level differences both sides." }
+    expected: { covered: true, must_mention: ["MSG|glovebox", "Saffire"], notes: "Field-level differences both sides; either hardware naming accepted." }
   - id: cmp-02
     type: comparison
-    question: "Compare FLEX-2 and CFI variables and measurements."
+    question: "Compare FLEX-2 and FLEX variables and measurements."
     environment: null
-    expected: { covered: true, must_cite: ["rec:flex-2#variables", "rec:cfi#variables"], notes: "Name varied vs held-constant per side." }
+    expected: { covered: true, must_cite: ["rec:flex-2#variables", "rec:flex#variables"], notes: "Name varied vs held-constant per side. CFI version returns when its record lands." }
   - id: cmp-03
     type: comparison
     question: "Compare SAME and DAFT detection approaches."

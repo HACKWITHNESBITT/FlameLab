@@ -23,7 +23,7 @@ def by_id():
 def client(tmp_path, monkeypatch):
     import backend.app as appmod
     monkeypatch.setattr(appmod, "SI_LOG", tmp_path / "audit.log")
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("MODEL_API_KEY", raising=False)
     return TestClient(appmod.app)
 
 
@@ -36,6 +36,24 @@ def test_valid_sentences_pass(by_id):
     ok, _ = verifier.verify_sentence(
         "The drop-tower sphere burned at 17 percent oxygen "
         "[rec:bass#test_conditions.value.1.oxygen_percent].", by_id.get)
+    assert ok
+
+
+def test_numbers_may_split_across_citations_and_notes(by_id):
+    ok, _ = verifier.verify_sentence(
+        "FLEX tested 10 to 50 percent oxygen at 7.35 to 14.7 psi "
+        "[rec:flex#test_conditions.value.0.oxygen_percent]"
+        "[rec:flex#test_conditions.value.0.pressure_psi].", by_id.get)
+    assert ok
+    ok, _ = verifier.verify_sentence(
+        "FLEX tested 0.10 to 0.50 mole fraction "
+        "[rec:flex#test_conditions.value.0.oxygen_percent].", by_id.get)
+    assert ok  # original values live in the field note
+
+
+def test_hyphenated_names_are_not_numbers(by_id):
+    ok, _ = verifier.verify_sentence(
+        "FLEX-2 tested droplets [rec:flex-2#fuel_class].", by_id.get)
     assert ok
 
 
@@ -78,6 +96,7 @@ def test_coverage_gate():
     assert cov("What should the crew do after a fire alarm?")["kind"] == "procedure"
     assert cov("How does a rocket engine fire behave?")["kind"] == "scope"
     assert cov("How does flame spread behave at Moon gravity?")["kind"] == "gap"
+    assert cov("Why is FLEX relevant for a Moon base atmosphere?")["covered"]
     assert not cov("xqzzy flurb")["covered"]
 
 
@@ -123,6 +142,16 @@ def test_ask_answerable_flows(client, monkeypatch):
     j = client.post("/api/ask", json={"question": "Tell me about Saffire"}).json()
     assert j["covered"] and j["citations"] == ["rec:saffire-i#fuels"]
     assert client.post("/api/ask", json={"question": "  "}).status_code == 400
+
+
+def test_ask_serves_verified_remainder(client, monkeypatch):
+    monkeypatch.setattr(
+        "backend.app.si_provider.generate",
+        lambda *a, **k: {"answer": "FLEX tested 10 to 50 percent oxygen "
+                                   "[rec:flex#test_conditions.value.0.oxygen_percent]. "
+                                   "FLEX also tested 99 percent oxygen."})
+    j = client.post("/api/ask", json={"question": "Tell me about FLEX"}).json()
+    assert j["covered"] and "99" not in j["answer"] and not j["verification"]["passed"]
 
 
 def test_compare_shapes_and_validation(client, monkeypatch):
