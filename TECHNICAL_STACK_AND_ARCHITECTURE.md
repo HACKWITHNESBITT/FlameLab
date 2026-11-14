@@ -27,7 +27,7 @@ Given that the curated dataset is expected to contain only dozens of records, we
 | Backend | Python + FastAPI | Lightweight, quick to implement, and provides automatic API documentation and validation through Pydantic. |
 | Data Storage | Curated JSON + SQLite | JSON provides an easy-to-manage source dataset, Pydantic validates records, and SQLite provides local persistence without requiring a database server. |
 | Scoring Engine | Plain Python module + YAML configuration | Keeps scoring logic transparent, configurable, and easy to unit test. |
-| AI / SI Layer | Claude via Anthropic API | Supports structured JSON output, enabling predictable responses and citation verification. |
+| AI / SI Layer | Muse via Meta Model API (OpenAI-compatible) | Supports structured JSON output, enabling predictable responses and citation verification. |
 | Retrieval | Structured filtering + keyword search | Sufficient for a dataset containing dozens of records. Avoids unnecessary vector database infrastructure. |
 | Backend Testing | pytest | Standard Python testing framework for API endpoints, validation, and scoring logic. |
 | Frontend Testing | Vitest | Lightweight testing for React components and frontend logic. |
@@ -114,7 +114,7 @@ This separation makes the scoring process:
 
 ### 3.5 AI / SI Layer
 
-**Technology:** Claude via the Anthropic API.
+**Technology:** Muse via the Meta Model API.
 
 The AI layer will provide structured interpretation and synthesis of retrieved information.
 
@@ -201,7 +201,7 @@ A single application deployment serving the backend API and built frontend asset
    Data Layer   Scoring    AI / SI Layer
        |         Engine          |
        v           |             v
-  JSON + SQLite    |       Claude API
+  JSON + SQLite    |       Muse API 
        |           |             |
        +-----------+-------------+
                    |
@@ -236,7 +236,7 @@ For this two-day build, the recommended stack is:
 - **Backend:** Python + FastAPI.
 - **Data:** JSON + Pydantic + SQLite.
 - **Scoring:** Python + YAML.
-- **AI / SI:** Claude via Anthropic API.
+- **AI / SI:** Muse via Meta Model API (OpenAI-compatible).
 - **Retrieval:** Structured filtering + keyword search.
 - **Testing:** pytest + Vitest + Playwright.
 - **Deployment:** Docker Compose + Render/Fly.io.
