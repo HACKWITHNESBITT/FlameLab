@@ -1,29 +1,36 @@
 # RUNBOOK
 
-Operations guide for running, checking and releasing Ember. The stack is not chosen yet (Phase 0, step 4), so commands marked **TBD** must be filled in once it is.
+Operations guide for running, checking and releasing Ember. Stack: see `TECHNICAL_STACK_AND_ARCHITECTURE.md` (React + TypeScript + Vite frontend, FastAPI backend, JSON + SQLite data, Claude SI layer).
 
 ## Components
 
 | Component | Location | Notes |
 | --- | --- | --- |
 | Curated records | `data/records/*.json` | Source of truth; schema in `docs/DATA_SCHEMA.md` |
-| Backend and API | `backend/` | Endpoints in `docs/API.md` |
+| Backend and API | `backend/` | FastAPI; endpoints in `docs/API.md` |
 | Config | `backend/config/environments.yaml`, `backend/config/weights.yaml` | Profiles and scoring weights; see `docs/SCORING.md` |
-| SI layer | `si/` (`si/prompts/`, `si/eval/questions.yaml`) | Rules in `docs/SI_GUIDELINES.md` |
-| Frontend | TBD | |
+| SI layer | `si/` (`si/prompts/`, `si/eval/questions.yaml`) | Claude API; rules in `docs/SI_GUIDELINES.md` |
+| Frontend | `frontend/` | React + TypeScript + Vite; Recharts + D3 for visualizations |
 
 ## Setup
 
-TBD: install dependencies, load records, start backend and frontend.
+1. Create and activate the project virtualenv inside the repo (`.venv`), install backend dependencies; `npm install` in `frontend/`.
+2. Validate records: `make validate-records` (schema per `docs/DATA_SCHEMA.md`).
+3. Start the API: `make run-api` (serves `/api` per `docs/API.md`).
+4. Start the frontend: `make run-ui` (reads the same `/api` base path).
+5. SI provider key: export `ANTHROPIC_API_KEY`; without it SI endpoints return `503` and the rest of the app keeps working.
 
 ## Common commands
 
 | Task | Command |
 | --- | --- |
-| Run tests | TBD |
-| Validate records against schema | TBD |
+| Run backend tests | `make test` (pytest) |
+| Run frontend tests | `make test-ui` (Vitest) |
+| Validate records against schema | `make validate-records` |
 | Evaluate the SI layer | `make eval-si` |
-| Start the app locally | TBD |
+| Content audit | `make audit` |
+| Start the API locally | `make run-api` |
+| Start the frontend locally | `make run-ui` |
 
 ## Health check
 
@@ -54,7 +61,7 @@ Used by the `release-readiness` skill before any demo or deploy.
 - [ ] Audit log shows no unverified SI text displayed
 - [ ] Weights and profiles are in config, with assumptions labelled `source: assumption`
 - [ ] The partial-gravity gap is visible in the UI; the flag appears for Moon and Mars
-- [ ] The three core journeys work (see `docs/TWO_DAY_PLAN.md` minimum viable demo)
+- [ ] The three core journeys work (see `docs/BRIEF.md`)
 - [ ] Accessibility pass: keyboard navigation, focus states, contrast
 - [ ] `docs/` matches current behavior (API, schema, scoring, SI)
 - [ ] No secrets in prompts, logs or the repo
@@ -64,7 +71,7 @@ Used by the `release-readiness` skill before any demo or deploy.
 
 ## Rollback
 
-TBD once the deployment method is chosen. At minimum, keep the previous tag deployable and record the data version alongside it.
+Redeploy the previous tag on the demo host (Render/Fly.io); configs (`environments.yaml`, `weights.yaml`) roll back with code. Record fixes go forward as new commits, never as edits to a release tag. At minimum, keep the previous tag deployable and record the data version alongside it.
 
 ## Schema and data changes
 
