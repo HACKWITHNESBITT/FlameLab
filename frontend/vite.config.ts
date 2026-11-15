@@ -9,7 +9,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // Same /api base path in dev and in the single-deployment demo.
-      "/api": "http://localhost:8000",
+      // FLAMELAB_API_PORT lets e2e point at its own hermetic backend.
+      "/api": `http://localhost:${process.env.FLAMELAB_API_PORT ?? 8000}`,
     },
   },
   test: {

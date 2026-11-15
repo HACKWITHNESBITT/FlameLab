@@ -9,17 +9,12 @@ test("journey 1: environment + lens → ranked list with breakdowns", async ({ p
 });
 
 test("journey 2: detail → SI panel → conditions and measurements", async ({ page }) => {
-  test.setTimeout(150_000);
   await page.goto("/#/investigations/saffire-i");
   await expect(page.getByRole("heading", { name: "Saffire-I" })).toBeVisible();
   await expect(page.getByText("Fuels")).toBeVisible();
-  // Terminal state, with or without a provider key: verified SI content, the
-  // unavailable panel, or an honest provider-error panel — never blank, never
-  // stuck loading. A live provider call can take a while.
-  await expect(page.getByText("Generating verified summary")).toBeHidden({ timeout: 150_000 });
-  await expect(
-    page.getByText("Findings", { exact: true }).or(page.getByRole("alert")),
-  ).toBeVisible();
+  // The e2e backend gets no provider key (see playwright.config.ts), so the
+  // panel must say unavailable — never blank, never stuck loading.
+  await expect(page.getByText("si_unavailable")).toBeVisible();
 });
 
 test("conditions map renders with target zone", async ({ page }) => {
