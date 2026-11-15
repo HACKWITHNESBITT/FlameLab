@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: flamelab
+    env: docker
+    dockerfile: Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
