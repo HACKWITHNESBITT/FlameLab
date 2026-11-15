@@ -3,6 +3,7 @@ import { ThemeToggle } from "./components/ThemeToggle";
 
 const NAV = [
   { to: "/", label: "Overview", end: true },
+  { to: "/safety", label: "Safety" },
   { to: "/rank", label: "Rank" },
   { to: "/conditions", label: "Conditions" },
   { to: "/gaps", label: "Gaps" },
