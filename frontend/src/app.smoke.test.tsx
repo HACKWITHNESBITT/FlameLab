@@ -196,7 +196,7 @@ describe("app smoke: every route renders against the API contract", () => {
 
   it("conditions: map renders", async () => {
     renderAt("/conditions");
-    expect(await screen.findByRole("img", { name: /conditions map/ })).toBeInTheDocument();
+    expect(await screen.findByRole("img", { name: /test ranges/ })).toBeInTheDocument();
   });
 
   it("gaps: gap cards with bounds", async () => {

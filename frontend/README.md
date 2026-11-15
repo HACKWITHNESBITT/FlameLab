@@ -1,8 +1,8 @@
 # FlameLab frontend
 
-React + TypeScript + Vite + Tailwind. D3 draws the oxygen–airflow conditions map;
-a radial wheel shows per-factor breakdown scores and a custom SVG radar overlays
-compared investigations. Thin client: no scoring, retrieval, or verification
+React + TypeScript + Vite + Tailwind. Custom SVG throughout: a range-strip chart
+for test conditions, a radial wheel for score breakdowns, and a radar overlay
+for compared investigations. Thin client: no scoring, retrieval, or verification
 logic lives here — everything renders the [`docs/API.md`](../docs/API.md) contract.
 
 ## Develop

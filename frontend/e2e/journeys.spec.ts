@@ -17,9 +17,10 @@ test("journey 2: detail → SI panel → conditions and measurements", async ({ 
   await expect(page.getByText("si_unavailable")).toBeVisible();
 });
 
-test("conditions map renders with target zone", async ({ page }) => {
+test("conditions chart renders ranges with target zone", async ({ page }) => {
   await page.goto("/#/conditions");
-  await expect(page.getByRole("img", { name: /conditions map/ })).toBeVisible();
+  await expect(page.getByRole("img", { name: /test ranges/ })).toBeVisible();
+  await expect(page.getByText(/investigations report oxygen ranges/)).toBeVisible();
 });
 
 test("journey 3: gaps → compare → ask → export", async ({ page }) => {

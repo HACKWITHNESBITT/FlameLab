@@ -73,7 +73,7 @@ export default function DetailPage() {
 
       <p className="text-[13px]">
         <Link to="/conditions" className="underline" style={{ color: "var(--color-link)" }}>
-          Open the oxygen–airflow conditions map →
+          Open the test conditions chart →
         </Link>
       </p>
     </div>
