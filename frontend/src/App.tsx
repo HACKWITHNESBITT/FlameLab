@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { AskWidget } from "./components/AskWidget";
 import { ThemeToggle } from "./components/ThemeToggle";
 
 const NAV = [
@@ -45,6 +46,7 @@ export default function App() {
         FlameLab summarizes research data only — it must not give crew response procedures. Direct operational
         questions to mission safety authorities.
       </footer>
+      <AskWidget />
     </div>
   );
 }
