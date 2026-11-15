@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from fastapi import FastAPI, Query, Request, middleware
+from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -356,3 +356,4 @@ def export(ids: str = Query(""), format: str = "json", fields: str = ""):
 @app.get("/api/earth-applications")
 def earth_applications() -> list[dict]:
     return EARTH_APPLICATIONS
+

@@ -11,10 +11,13 @@ async function parseError(res: Response): Promise<ApiError> {
   return new ApiError("http_error", `Request failed (${res.status})`, res.status);
 }
 
-/** GET JSON from the API base path. */
+/** GET JSON from the API base path, with a deploy-time override when configured. */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const base = import.meta.env.VITE_API_BASE_URL;
-  const url = base ? new URL(base + path) : new URL(path, import.meta.url);
+  const base = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+  const url = base
+    ? new URL(path.startsWith("/") ? `${base}${path}` : `${base}/${path}`)
+    : new URL(path, window.location.origin);
+
   let res: Response;
   try {
     res = await fetch(url, {
