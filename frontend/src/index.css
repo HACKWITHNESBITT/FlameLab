@@ -8,7 +8,8 @@
   --color-ink: #dfe4ee;
   --color-muted: #9aa4b5;
   --color-faint: #828b9d;
-  --color-signal: #ff5a1f;
+  --color-signal: #2bffa3;
+  --color-warn: #f5b32b;
   --color-alarm: #ff2d2d;
   --color-ok: #2bffa3;
   --color-link: #7cc4ff;
@@ -26,10 +27,10 @@
     --radar-grid: #2a3345;
     --radar-label: #cfd5e1;
     --radar-c0: #2bffa3;
-    --radar-c1: #ff4a1f;
+    --radar-c1: #ffd23f;
     --radar-c2: #6ec6ff;
     --color-gridline: #1a2334;
-    --zone-fill: rgb(255 90 31 / 0.1);
+    --zone-fill: rgb(43 255 163 / 0.1);
     --plot-fill: rgb(223 228 238 / 0.14);
   }
   html[data-theme="light"] {
@@ -41,7 +42,8 @@
     --color-ink: #141a26;
     --color-muted: #4c576b;
     --color-faint: #69738a;
-    --color-signal: #d9480f;
+    --color-signal: #0a9b5c;
+    --color-warn: #8a6100;
     --color-alarm: #d92d20;
     --color-ok: #0a9b5c;
     --color-link: #0b5cad;
@@ -52,10 +54,10 @@
     --radar-grid: #c2c9d6;
     --radar-label: #3c465a;
     --radar-c0: #0a9b5c;
-    --radar-c1: #d9480f;
+    --radar-c1: #8a6100;
     --radar-c2: #0b5cad;
     --color-gridline: #d3d9e4;
-    --zone-fill: rgb(217 72 15 / 0.1);
+    --zone-fill: rgb(10 155 92 / 0.1);
     --plot-fill: rgb(20 26 38 / 0.1);
     background-image:
       radial-gradient(ellipse 120% 70% at 50% -10%, rgb(180 200 230 / 0.5), transparent 60%),
@@ -67,14 +69,17 @@
       linear-gradient(to right, rgb(20 30 50 / 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(20 30 50 / 0.05) 1px, transparent 1px);
   }
+  html[data-theme="light"] .panel {
+    --tick: rgb(10 155 92 / 0.55);
+  }
   html[data-theme="light"] .panel-head {
     background: linear-gradient(to bottom, rgb(20 30 50 / 0.03), transparent);
   }
   html[data-theme="light"] .panel table thead tr {
-    border-bottom-color: rgb(217 72 15 / 0.45);
+    border-bottom-color: rgb(10 155 92 / 0.45);
   }
   html[data-theme="light"] .panel table tbody tr:hover {
-    background-color: rgb(217 72 15 / 0.05);
+    background-color: rgb(10 155 92 / 0.05);
   }
   html[data-theme="light"] .radar-stage {
     background: radial-gradient(ellipse 70% 70% at 50% 50%, rgb(180 200 230 / 0.35), transparent 70%);
@@ -137,7 +142,7 @@
 
 @layer components {
   .panel {
-    --tick: rgb(255 90 31 / 0.6);
+    --tick: rgb(43 255 163 / 0.6);
     background-color: var(--color-panel);
     background-image:
       linear-gradient(var(--tick), var(--tick)),
@@ -213,7 +218,7 @@
   .btn-primary {
     background-color: var(--color-signal);
     border-color: var(--color-signal);
-    color: #160903;
+    color: #03130c;
     font-weight: 700;
   }
   .btn-primary:hover:not(:disabled) {
@@ -271,13 +276,13 @@
   }
   /* Data tables: HUD grid with hot header rule and row hover. */
   .panel table thead tr {
-    border-bottom: 1px solid rgb(255 90 31 / 0.4);
+    border-bottom: 1px solid rgb(43 255 163 / 0.4);
   }
   .panel table tbody tr {
     transition: background-color 0.12s ease;
   }
   .panel table tbody tr:hover {
-    background-color: rgb(255 90 31 / 0.05);
+    background-color: rgb(43 255 163 / 0.05);
   }
   /* Radar glow stage (visualization.jpg): soft underlay + crisp line per series. */
   .radar-stage {
