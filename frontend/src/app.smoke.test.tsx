@@ -152,8 +152,14 @@ function renderAt(entry: string) {
 }
 
 describe("app smoke: every route renders against the API contract", () => {
-  it("rank: list with expandable breakdown", async () => {
+  it("overview: about text with journey links", async () => {
     renderAt("/");
+    expect(await screen.findByText("Which fire research matters for your atmosphere?")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /find what matters/i })).toHaveAttribute("href", "/rank");
+  });
+
+  it("rank: list with expandable breakdown", async () => {
+    renderAt("/rank");
     await screen.findByText("BASS-II");
     fireEvent.click(screen.getAllByRole("button", { name: "Why this rank" })[0]);
     await screen.findByText(/Top drivers/);

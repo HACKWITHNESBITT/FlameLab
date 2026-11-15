@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("journey 1: environment + lens → ranked list with breakdowns", async ({ page }) => {
-  await page.goto("/#/");
+  await page.goto("/#/rank");
   await expect(page.getByLabel("Environment")).toHaveValue("moon_base");
   await expect(page.locator("ol li").first()).toBeVisible();
   await page.getByRole("button", { name: "Why this rank" }).first().click();
@@ -9,11 +9,17 @@ test("journey 1: environment + lens → ranked list with breakdowns", async ({ p
 });
 
 test("journey 2: detail → SI panel → conditions and measurements", async ({ page }) => {
+  test.setTimeout(150_000);
   await page.goto("/#/investigations/saffire-i");
   await expect(page.getByRole("heading", { name: "Saffire-I" })).toBeVisible();
   await expect(page.getByText("Fuels")).toBeVisible();
-  // No provider key in test env: the panel must say unavailable, not go blank.
-  await expect(page.getByText("si_unavailable")).toBeVisible();
+  // Terminal state, with or without a provider key: verified SI content, the
+  // unavailable panel, or an honest provider-error panel — never blank, never
+  // stuck loading. A live provider call can take a while.
+  await expect(page.getByText("Generating verified summary")).toBeHidden({ timeout: 150_000 });
+  await expect(
+    page.getByText("Findings", { exact: true }).or(page.getByRole("alert")),
+  ).toBeVisible();
 });
 
 test("conditions map renders with target zone", async ({ page }) => {

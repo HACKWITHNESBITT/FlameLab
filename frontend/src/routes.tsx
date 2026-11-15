@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import App from "./App.tsx";
+import OverviewPage from "./pages/OverviewPage.tsx";
 import RankPage from "./pages/RankPage.tsx";
 import DetailPage from "./pages/DetailPage.tsx";
 import ConditionsPage from "./pages/ConditionsPage.tsx";
@@ -13,7 +14,8 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<App />}>
-        <Route index element={<RankPage />} />
+        <Route index element={<OverviewPage />} />
+        <Route path="rank" element={<RankPage />} />
         <Route path="investigations/:id" element={<DetailPage />} />
         <Route path="conditions" element={<ConditionsPage />} />
         <Route path="gaps" element={<GapsPage />} />

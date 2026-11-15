@@ -1,7 +1,8 @@
 import { test } from "@playwright/test";
 
 const SHOTS: [string, string][] = [
-  ["/#/", "rank"],
+  ["/#/", "overview"],
+  ["/#/rank", "rank"],
   ["/#/investigations/saffire-i", "detail"],
   ["/#/conditions", "conditions"],
   ["/#/gaps", "gaps"],
@@ -19,7 +20,7 @@ for (const [route, name] of SHOTS) {
 }
 
 test("shot wheel", async ({ page }) => {
-  await page.goto("/#/", { waitUntil: "domcontentloaded" });
+  await page.goto("/#/rank", { waitUntil: "domcontentloaded" });
   await page.locator("#main").waitFor();
   await page.getByRole("button", { name: "Why this rank" }).first().click();
   await page.getByText(/Top drivers/).waitFor();
@@ -36,7 +37,7 @@ test("shot radar", async ({ page }) => {
 });
 
 test("shot light", async ({ page }) => {
-  await page.goto("/#/", { waitUntil: "domcontentloaded" });
+  await page.goto("/#/rank", { waitUntil: "domcontentloaded" });
   await page.locator("#main").waitFor();
   await page.getByRole("button", { name: "Switch to light mode" }).click();
   await page.waitForTimeout(1000);
@@ -44,7 +45,7 @@ test("shot light", async ({ page }) => {
 });
 
 test("shot light wheel", async ({ page }) => {
-  await page.goto("/#/", { waitUntil: "domcontentloaded" });
+  await page.goto("/#/rank", { waitUntil: "domcontentloaded" });
   await page.locator("#main").waitFor();
   await page.getByRole("button", { name: "Switch to light mode" }).click();
   await page.getByRole("button", { name: "Why this rank" }).first().click();

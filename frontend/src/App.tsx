@@ -1,30 +1,15 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { api } from "./api/client";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { useApi } from "./hooks/useApi";
 
 const NAV = [
-  { to: "/", label: "Rank", end: true },
+  { to: "/", label: "Overview", end: true },
+  { to: "/rank", label: "Rank" },
   { to: "/conditions", label: "Conditions" },
   { to: "/gaps", label: "Gaps" },
   { to: "/compare", label: "Compare" },
   { to: "/ask", label: "Ask" },
   { to: "/earth", label: "Earth" },
 ];
-
-function HealthDot() {
-  const { data } = useApi(() => api<{ status: string; version: string; records: number }>("/api/health"), []);
-  const ok = data?.status === "ok";
-  return (
-    <span
-      className="num text-xs"
-      title={data ? `API ${data.version} · ${data.records} records` : "API unreachable"}
-      style={{ color: ok ? "var(--color-ok)" : "var(--color-alarm)" }}
-    >
-      {ok ? `● api ${data.version} · ${data.records} rec` : "● api down"}
-    </span>
-  );
-}
 
 export default function App() {
   return (
@@ -43,10 +28,7 @@ export default function App() {
           </span>
           <span className="label hidden sm:inline">spacecraft fire-safety research explorer</span>
         </div>
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <HealthDot />
-        </div>
+        <ThemeToggle />
       </header>
       <nav aria-label="Primary" className="flex flex-wrap gap-1 py-3">
         {NAV.map((n) => (
