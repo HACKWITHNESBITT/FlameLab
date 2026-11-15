@@ -9,7 +9,6 @@ const NAV = [
   { to: "/conditions", label: "Conditions" },
   { to: "/gaps", label: "Gaps" },
   { to: "/compare", label: "Compare" },
-  { to: "/ask", label: "Ask" },
   { to: "/earth", label: "Earth" },
 ];
 
