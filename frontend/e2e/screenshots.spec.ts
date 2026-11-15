@@ -8,7 +8,6 @@ const SHOTS: [string, string][] = [
   ["/#/conditions", "conditions"],
   ["/#/gaps", "gaps"],
   ["/#/compare?ids=bass-ii,saffire-i", "compare"],
-  ["/#/ask", "ask"],
 ];
 
 for (const [route, name] of SHOTS) {
@@ -19,6 +18,17 @@ for (const [route, name] of SHOTS) {
     await page.screenshot({ path: `/tmp/flamelab-${name}.png` });
   });
 }
+
+test("shot ask", async ({ page }) => {
+  await page.goto("/#/rank", { waitUntil: "domcontentloaded" });
+  await page.locator("#main").waitFor();
+  await page.getByRole("button", { name: "Open ask chat" }).click();
+  await page.getByLabel("Chat input").fill("How do flames behave at Mars gravity?");
+  await page.getByRole("button", { name: "Send" }).click();
+  await page.getByText("Not covered by the available data", { exact: true }).waitFor();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "/tmp/flamelab-ask.png" });
+});
 
 test("shot wheel", async ({ page }) => {
   await page.goto("/#/rank", { waitUntil: "domcontentloaded" });

@@ -28,9 +28,9 @@ test("journey 3: gaps → compare → ask → export", async ({ page }) => {
   await page.goto("/#/compare?ids=bass-ii,saffire-i");
   await expect(page.getByText("Aligned fields")).toBeVisible();
   await expect(page.getByText("Export for modeling")).toBeVisible();
-  await page.goto("/#/ask");
-  await page.getByLabel("Question").fill("How do flames behave at Mars gravity?");
-  await page.getByRole("button", { name: "Ask", exact: true }).click();
+  await page.getByRole("button", { name: "Open ask chat" }).click();
+  await page.getByLabel("Chat input").fill("How do flames behave at Mars gravity?");
+  await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByText("Not covered by the available data", { exact: true })).toBeVisible();
 });
 

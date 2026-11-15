@@ -44,9 +44,6 @@ function loadHistory(): ChatMsg[] {
 export function AskWidget() {
   const [open, setOpen] = useState(false);
   const [everOpen, setEverOpen] = useState(false);
-  useEffect(() => {
-    if (open) setEverOpen(true);
-  }, [open ]);
 
   return (
     <>
@@ -56,7 +53,10 @@ export function AskWidget() {
         aria-expanded={open}
         aria-controls="ask-chat"
         aria-label={open ? "Close ask chat" : "Open ask chat"}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          setEverOpen(true);
+          setOpen((o) => !o);
+        }}
       >
         {open ? "Close" : "Ask"}
       </button>
@@ -73,7 +73,7 @@ function AskPanel({ onClose }: { onClose: () => void }) {
   const [messages, setMessages] = useState<ChatMsg[]>(loadHistory);
   const [input, setInput] = useState("");
   const [env, setEnv] = useState("moon_base");
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ q: string; ts: number } | null>(null);
   const idRef = useRef(1);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -107,7 +107,7 @@ function AskPanel({ onClose }: { onClose: () => void }) {
     const id = idRef.current++;
     setMessages((ms) => [...ms, { id, role: "user", ts: Date.now(), env, question: q, result: null, error: null }]);
     setInput("");
-    setPending(q);
+    setPending({ q, ts: Date.now() });
     apiPost<AskResult>("/api/ask", { question: q, environment: env }).then(
       (result) => {
         setPending(null);
@@ -177,7 +177,7 @@ function AskPanel({ onClose }: { onClose: () => void }) {
         {pending && (
           <div className="space-y-1">
             <p className="num text-xs" style={{ color: "var(--color-faint)" }}>
-              {timeOf(Date.now())} · {env}
+              {timeOf(pending.ts)} · {env}
             </p>
             <p className="label num animate-pulse">Retrieving and verifying …</p>
           </div>

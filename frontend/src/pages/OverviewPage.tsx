@@ -53,10 +53,10 @@ export default function OverviewPage() {
         <div className="panel-head">
           <span className="label">More views</span>
         </div>
-        <div className="flex flex-wrap gap-2 p-3">
+        <div className="flex flex-wrap items-center gap-2 p-3">
           <Link to="/compare" className="btn">Compare + export</Link>
-          <Link to="/ask" className="btn">Ask the data</Link>
           <Link to="/earth" className="btn">Earth applications</Link>
+          <span className="label">Ask: floating chat, bottom-right, every page</span>
         </div>
       </section>
 
