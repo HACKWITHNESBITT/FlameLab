@@ -119,6 +119,16 @@ const ROUTES: [string, unknown][] = [
     "/api/earth-applications",
     [{ application: "smoke detector test", investigation: null, source: "https://example.com", note: "a note" }],
   ],
+  [
+    "/api/ask",
+    {
+      answer: "Saffire-I tested large fires. [rec:saffire-i#fuels]",
+      citations: ["rec:saffire-i#fuels"],
+      covered: true,
+      missing: [],
+      verification: { passed: true },
+    },
+  ],
 ];
 
 function mockApi() {
@@ -140,7 +150,10 @@ function mockApi() {
   );
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
 
 function renderAt(entry: string) {
   mockApi();
@@ -197,10 +210,14 @@ describe("app smoke: every route renders against the API contract", () => {
     expect(await screen.findByText("Export for modeling")).toBeInTheDocument();
   });
 
-  it("ask: form renders", async () => {
-    renderAt("/ask");
-    expect(await screen.findByLabelText("Question")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ask" })).toBeInTheDocument();
+  it("ask: widget opens and answers", async () => {
+    renderAt("/rank");
+    fireEvent.click(screen.getByRole("button", { name: "Open ask chat" }));
+    fireEvent.change(await screen.findByLabelText("Chat input"), {
+      target: { value: "What did Saffire-I test?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText(/Saffire-I tested large fires/)).toBeInTheDocument();
   });
 
   it("earth: applications list", async () => {
