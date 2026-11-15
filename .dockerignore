@@ -1,0 +1,8 @@
+# Docker ignore file for FlameLab
+# Exclude development and cache files
+*.pyc
+__pycache__/
+*.pkl
+*.db
+.env
+.secret
