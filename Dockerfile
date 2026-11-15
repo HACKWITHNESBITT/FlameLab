@@ -1,4 +1,5 @@
 # Build frontend
+ARG BUILD_DATE=2026-11-15
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
