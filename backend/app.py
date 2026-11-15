@@ -18,6 +18,7 @@ import yaml
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend import scoring, store
 from si import provider as si_provider
@@ -76,6 +77,10 @@ EARTH_APPLICATIONS = [
 FACTOR_FIELDS = scoring.FACTOR_FIELDS
 
 app = FastAPI(title="FlameLab API", version=VERSION)
+
+@app.get("/")
+def root():
+    return {"message": "FlameLab API", "docs": "/api/health", "status": "running"}
 
 
 def err(code: str, message: str, status: int) -> JSONResponse:
