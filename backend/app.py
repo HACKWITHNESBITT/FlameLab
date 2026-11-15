@@ -18,6 +18,7 @@ import yaml
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend import scoring, store
 from si import provider as si_provider
@@ -79,7 +80,7 @@ app = FastAPI(title="FlameLab API", version=VERSION)
 
 @app.get("/")
 def root():
-    return "FlameLab API is running. Visit /api/health for status."
+    return {"message": "FlameLab API", "docs": "/api/health", "status": "running"}
 
 
 def err(code: str, message: str, status: int) -> JSONResponse:
