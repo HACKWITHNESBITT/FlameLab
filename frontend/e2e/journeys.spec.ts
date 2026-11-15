@@ -42,3 +42,10 @@ test("theme toggle switches to light mode and persists", async ({ page }) => {
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
+
+test("safety insights render with disclaimer", async ({ page }) => {
+  await page.goto("/#/safety");
+  await expect(page.getByText("Prevention focus")).toBeVisible();
+  await expect(page.getByText(/Research insights only/)).toBeVisible();
+  await expect(page.locator("ol li").first()).toBeVisible();
+});

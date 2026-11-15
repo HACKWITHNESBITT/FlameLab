@@ -158,6 +158,15 @@ describe("app smoke: every route renders against the API contract", () => {
     expect(screen.getByRole("link", { name: /find what matters/i })).toHaveAttribute("href", "/rank");
   });
 
+  it("safety: prevention list, implications, gaps, disclaimer", async () => {
+    renderAt("/safety");
+    expect(await screen.findByRole("heading", { name: "Fire-safety insights" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /BASS-II/ })).toBeInTheDocument();
+    expect(await screen.findByText(/si_unavailable/)).toBeInTheDocument();
+    expect(await screen.findByText("No partial-gravity combustion data")).toBeInTheDocument();
+    expect(screen.getByText(/Research insights only/)).toBeInTheDocument();
+  });
+
   it("rank: list with expandable breakdown", async () => {
     renderAt("/rank");
     await screen.findByText("BASS-II");

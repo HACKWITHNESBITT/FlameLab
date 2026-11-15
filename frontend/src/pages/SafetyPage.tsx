@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { Environment, Gap, InvestigationSummary, RankEntry, SiSummary } from "../api/types";
@@ -21,9 +21,7 @@ export default function SafetyPage() {
 
   const top = useMemo(() => (rank.data ?? []).slice(0, 5), [rank.data]);
   const byId = useMemo(() => new Map((roster.data ?? []).map((r) => [r.id, r])), [roster.data]);
-  useEffect(() => {
-    if (top.length > 0 && !top.some((t) => t.id === selected)) setSelected(top[0].id);
-  }, [top, selected]);
+  const selectedId = selected && top.some((t) => t.id === selected) ? selected : (top[0]?.id ?? null);
 
   if (envs.loading || rank.loading || roster.loading) return <Loading label="Loading safety insights" />;
   if (envs.error) return <ErrorState error={envs.error} onRetry={envs.retry} />;
@@ -56,7 +54,7 @@ export default function SafetyPage() {
           <ol className="divide-y" style={{ borderColor: "var(--color-edge)" }}>
             {top.map((e, i) => {
               const r = byId.get(e.id);
-              const active = selected === e.id;
+              const active = selectedId === e.id;
               return (
                 <li key={e.id}>
                   <button
@@ -97,7 +95,7 @@ export default function SafetyPage() {
         )}
       </section>
 
-      {selected && <ImplicationsPanel id={selected} env={env} name={byId.get(selected)?.name ?? selected} />}
+      {selectedId && <ImplicationsPanel id={selectedId} env={env} name={byId.get(selectedId)?.name ?? selectedId} />}
 
       <section aria-label="What the research cannot tell you" className="panel">
         <div className="panel-head"><span className="label">What the research cannot tell you</span></div>

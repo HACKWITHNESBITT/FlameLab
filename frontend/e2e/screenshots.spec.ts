@@ -2,6 +2,7 @@ import { test } from "@playwright/test";
 
 const SHOTS: [string, string][] = [
   ["/#/", "overview"],
+  ["/#/safety", "safety"],
   ["/#/rank", "rank"],
   ["/#/investigations/saffire-i", "detail"],
   ["/#/conditions", "conditions"],

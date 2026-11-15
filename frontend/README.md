@@ -30,6 +30,7 @@ npm run lint      # oxlint
 | Route | Journey |
 | --- | --- |
 | `#/` | overview — what FlameLab is and how to use it |
+| `#/safety` | fire-safety insights — prevention top 5, cited implications, gaps (research only, never procedures) |
 | `#/rank` | 1 — environment + lens → ranked list with breakdowns → detail |
 | `#/investigations/:id` | 2 — detail → verified SI summary → conditions and measurements |
 | `#/conditions` | 2 — oxygen vs airflow map with target zones |
