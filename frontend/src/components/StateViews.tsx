@@ -41,7 +41,7 @@ export function ErrorState({ error, onRetry }: { error: ApiError; onRetry?: () =
 
 /** Non-blocking notice strip (assumptions, caveats, partial verification). */
 export function Notice({ tone = "info", children }: { tone?: "info" | "warn"; children: React.ReactNode }) {
-  const color = tone === "warn" ? "var(--color-signal)" : "var(--color-muted)";
+  const color = tone === "warn" ? "var(--color-warn)" : "var(--color-muted)";
   return (
     <div className="panel px-3 py-2 text-[13px]" style={{ borderLeft: `2px solid ${color}` }}>
       {children}

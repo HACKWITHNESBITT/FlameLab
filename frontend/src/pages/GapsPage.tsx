@@ -41,7 +41,7 @@ export default function GapsPage() {
         <div className="space-y-2">
           {(gaps.data ?? []).map((g) => (
             <article key={g.gap} className="panel p-4">
-              <p className="num text-xs" style={{ color: "var(--color-signal)" }}>
+              <p className="num text-xs" style={{ color: "var(--color-warn)" }}>
                 {g.gap}
               </p>
               <h2 className="mt-0.5 text-lg font-semibold">{g.title}</h2>

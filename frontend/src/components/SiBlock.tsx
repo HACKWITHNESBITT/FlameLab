@@ -20,7 +20,7 @@ export function SiBlock({
         <span className="label">{title}</span>
         <span
           className="num text-xs"
-          style={{ color: passed ? "var(--color-ok)" : "var(--color-signal)" }}
+          style={{ color: passed ? "var(--color-ok)" : "var(--color-warn)" }}
         >
           {passed ? "● verified" : "▲ partially verified"}
         </span>

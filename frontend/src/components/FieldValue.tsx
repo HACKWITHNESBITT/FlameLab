@@ -44,7 +44,7 @@ export function FieldValue({ label, field }: { label: string; field: unknown }) 
           className="num ml-1 rounded-sm border px-1"
           style={{
             borderColor: "var(--color-edge)",
-            color: missing ? "var(--color-faint)" : w.status === "read" ? "var(--color-ok)" : "var(--color-signal)",
+            color: missing ? "var(--color-faint)" : w.status === "read" ? "var(--color-ok)" : "var(--color-warn)",
           }}
         >
           {STATUS_LABEL[w.status] ?? w.status}

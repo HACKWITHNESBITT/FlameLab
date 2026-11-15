@@ -134,7 +134,7 @@ export default function RankPage() {
                     </span>
                   ))}
                   {e.flags.map((f) => (
-                    <span key={f} className="num" style={{ color: "var(--color-signal)" }}>
+                    <span key={f} className="num" style={{ color: "var(--color-warn)" }}>
                       ▲ {f}
                     </span>
                   ))}

@@ -94,7 +94,7 @@ function Answer({ result }: { result: AskResult }) {
   if (!result.covered) {
     return (
       <div className="panel p-4">
-        <p className="label" style={{ color: "var(--color-signal)" }}>Not covered by the available data</p>
+        <p className="label" style={{ color: "var(--color-warn)" }}>Not covered by the available data</p>
         <p className="mt-1 text-sm">{result.answer}</p>
         {result.missing.length > 0 && (
           <ul className="mt-2 list-disc pl-5 text-[13px]" style={{ color: "var(--color-muted)" }}>
@@ -110,7 +110,7 @@ function Answer({ result }: { result: AskResult }) {
     <div className="panel">
       <div className="panel-head">
         <span className="label">Answer</span>
-        <span className="num text-xs" style={{ color: result.verification.passed ? "var(--color-ok)" : "var(--color-signal)" }}>
+        <span className="num text-xs" style={{ color: result.verification.passed ? "var(--color-ok)" : "var(--color-warn)" }}>
           {result.verification.passed ? "● verified" : "▲ partially verified"}
         </span>
       </div>

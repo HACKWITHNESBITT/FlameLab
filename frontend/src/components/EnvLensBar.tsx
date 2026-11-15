@@ -60,7 +60,7 @@ export function EnvLensBar({
       {current && ((current.assumptions?.length ?? 0) > 0 || current.gravity_note) && (
         <div className="border-t px-3 py-2 text-[13px]" style={{ borderColor: "var(--color-edge)" }}>
           {current.gravity?.includes("no_data") && (
-            <p style={{ color: "var(--color-signal)" }}>
+            <p style={{ color: "var(--color-warn)" }}>
               ▲ Partial-gravity environment: PSI has no Moon/Mars-g combustion data; micro/normal-g results only bound
               it.
             </p>
