@@ -10,7 +10,7 @@ RUN npm run build
 FROM python:3.12-slim AS backend
 WORKDIR /app
 COPY backend/ /app/backend/
-COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
+COPY --from=frontend-builder /app/dist /app/frontend/dist
 
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
