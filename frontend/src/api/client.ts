@@ -11,11 +11,13 @@ async function parseError(res: Response): Promise<ApiError> {
   return new ApiError("http_error", `Request failed (${res.status})`, res.status);
 }
 
-/** GET JSON from the same-origin /api base path (dev proxy or deployed together). */
+/** GET JSON from the API base path. */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const base = import.meta.env.VITE_API_BASE_URL;
+  const url = base ? new URL(base + path) : new URL(path, import.meta.url);
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(url, {
       headers: { Accept: "application/json" },
       ...init,
     });

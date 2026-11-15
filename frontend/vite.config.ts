@@ -8,7 +8,6 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Same /api base path in dev and in the single-deployment demo.
       "/api": "http://localhost:8000",
     },
   },
@@ -17,4 +16,5 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
   },
+  publicDir: "frontend/public",
 });

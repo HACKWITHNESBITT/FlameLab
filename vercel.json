@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "framework": "vite"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "frontend/dist/$1"
+    }
+  ]
+}

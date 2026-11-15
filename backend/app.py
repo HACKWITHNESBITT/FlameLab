@@ -15,9 +15,10 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from fastapi import FastAPI, Query, Request
+from fastapi import FastAPI, Query, Request, middleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend import scoring, store
 from si import provider as si_provider
@@ -76,6 +77,14 @@ EARTH_APPLICATIONS = [
 FACTOR_FIELDS = scoring.FACTOR_FIELDS
 
 app = FastAPI(title="FlameLab API", version=VERSION)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def err(code: str, message: str, status: int) -> JSONResponse:
