@@ -78,6 +78,8 @@ FACTOR_FIELDS = scoring.FACTOR_FIELDS
 
 app = FastAPI(title="FlameLab API", version=VERSION)
 
+app.mount("/frontend", StaticFiles(directory="/app/frontend/dist", html=True), name="frontend")
+
 @app.get("/")
 def root():
     return {"message": "FlameLab API", "docs": "/api/health", "status": "running"}
