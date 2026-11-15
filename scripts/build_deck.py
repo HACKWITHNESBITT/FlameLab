@@ -1,4 +1,4 @@
-"""Build the FlameLab hackathon pitch deck (10 slides, 16:9 PPTX).
+"""Build the FlameLab hackathon pitch deck (7 slides, 16:9 PPTX).
 
 Usage: .venv/bin/python scripts/build_deck.py [output.pptx]
 Shots: docs/deck/*.png (regenerate app shots with the frontend e2e suite;
@@ -60,7 +60,7 @@ def footer(slide, num: int) -> None:
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.LEFT
     r = p.add_run()
-    r.text = f"FLAMELAB  ·  SI-POWERED FIRE-SAFETY INSIGHTS{' ' * 8}{num:02d} / 10"
+    r.text = f"FLAMELAB  ·  SI-POWERED FIRE-SAFETY INSIGHTS{' ' * 8}{num:02d} / 07"
     r.font.size = Pt(9)
     r.font.name = SANS
     r.font.color.rgb = MUTED
@@ -249,30 +249,17 @@ def s03_solution(prs: Presentation) -> None:
               0.6, 6.45, 12.133, size=12, color=MUTED)
 
 
-def s04_demo_rank(prs: Presentation) -> None:
+def s04_demo(prs: Presentation) -> None:
     slide = base_slide(prs, 4)
-    y = heading(slide, "Demo", "Pick an atmosphere. Get a shortlist.")
-    bottom = shot(slide, "rank.png", 0.6, y + 0.15, 7.9)
-    caption(slide, "Moon-base ranking with per-factor score wheel, flags, and visible assumptions.",
-            0.6, bottom + 0.08, 7.9)
-    bullets(slide, [
-        "7-factor weighted scoring, tuned per lens.",
-        "Score wheel + table explain every rank.",
-        "Unevaluated factors score null — less evidence can never outrank more.",
-    ], 8.85, y + 0.3, 3.85, size=14, gap=10, height=4.0)
-
-
-def s05_demo_evidence(prs: Presentation) -> None:
-    slide = base_slide(prs, 5)
-    y = heading(slide, "Demo", "Every claim traces to a record.")
-    bullets(slide, [
-        "Verified SI findings with [rec:id#field] citations.",
-        "Full record context: fuels, conditions, measurements.",
-        "Numbers checked against cited fields; failures removed.",
-    ], 0.6, y + 0.3, 3.6, size=14, gap=10, height=4.0)
-    bottom = shot(slide, "live-detail.png", 4.5, y + 0.15, 8.23)
-    caption(slide, "Live SI summary for Saffire-I: cited findings, verified badge, full record below.",
-            4.5, bottom + 0.08, 8.23)
+    y = heading(slide, "Demo", "Ranked shortlists. Cited evidence.")
+    b1 = shot(slide, "rank.png", 0.6, y + 0.15, 5.95)
+    caption(slide, "Moon-base ranking: breakdowns, flags, visible assumptions.",
+            0.6, b1 + 0.08, 5.95)
+    b2 = shot(slide, "live-detail.png", 6.78, y + 0.15, 5.95)
+    caption(slide, "Live SI summary: cited findings, verified badge.",
+            6.78, b2 + 0.08, 5.95)
+    body_text(slide, "Every score explained · every claim traced to its record.",
+              0.6, 6.15, 12.133, size=12, color=MUTED)
 
 
 def step_box(slide, left: float, title: str, body: str) -> None:
@@ -281,8 +268,8 @@ def step_box(slide, left: float, title: str, body: str) -> None:
     body_text(slide, body, left + 0.2, 2.55, 2.3, size=11, color=MUTED, height=0.75)
 
 
-def s06_trust(prs: Presentation) -> None:
-    slide = base_slide(prs, 6)
+def s05_trust(prs: Presentation) -> None:
+    slide = base_slide(prs, 5)
     heading(slide, "Trust", "SI you can verify — or it stays silent.")
     steps = [
         ("1 · RETRIEVE", "Keyword + structured retrieval with a coverage gate."),
@@ -299,14 +286,15 @@ def s06_trust(prs: Presentation) -> None:
         "Bar: zero unsupported claims before every release.",
         "Every answer audit-logged with sources and verdict.",
         ("Ask about Mars gravity and it tells you what it doesn't know.", WARN),
-    ], 0.6, 3.7, 6.3, size=13, gap=8, height=3.0)
+        "Safety unknowns stay visible — crew procedures deferred to mission authorities.",
+    ], 0.6, 3.7, 6.3, size=13, gap=6, height=3.0)
     bottom = shot(slide, "live-ask.png", 7.35, 3.7, 5.2)
     caption(slide, "Honest refusal: the data gap is named, nothing is invented.",
             7.35, bottom + 0.08, 5.2)
 
 
-def s07_visuals(prs: Presentation) -> None:
-    slide = base_slide(prs, 7)
+def s06_visuals(prs: Presentation) -> None:
+    slide = base_slide(prs, 6)
     y = heading(slide, "Demo", "See the conditions, compare the evidence.")
     b1 = shot(slide, "conditions.png", 0.6, y + 0.15, 5.95)
     caption(slide, "Oxygen–airflow map with target zones; missing ranges listed as gaps.",
@@ -314,19 +302,6 @@ def s07_visuals(prs: Presentation) -> None:
     b2 = shot(slide, "radar.png", 6.78, y + 0.15, 5.95)
     caption(slide, "Factor radar overlays three investigations; unevaluated factors gap.",
             6.78, b2 + 0.08, 5.95)
-
-
-def s08_safety(prs: Presentation) -> None:
-    slide = base_slide(prs, 8)
-    y = heading(slide, "Demo", "Safety insights — unknowns on the page.")
-    bottom = shot(slide, "gaps.png", 0.6, y + 0.15, 7.9)
-    caption(slide, "Named gaps with bounding records; partial-gravity caveat always visible.",
-            0.6, bottom + 0.08, 7.9)
-    bullets(slide, [
-        "Prevention-ranked top 5 with cited implications.",
-        "PSI has no partial-gravity data — results only bound it.",
-        "Research summaries only. Crew procedures always deferred to mission safety authorities.",
-    ], 8.85, y + 0.3, 3.85, size=14, gap=10, height=4.0)
 
 
 def chip(slide, left: float, top: float, number: str, label: str) -> None:
@@ -353,27 +328,6 @@ def chip(slide, left: float, top: float, number: str, label: str) -> None:
     r.font.color.rgb = MUTED
 
 
-def s09_impact(prs: Presentation) -> None:
-    slide = base_slide(prs, 9)
-    y = heading(slide, "Impact & roadmap", "Built for the people who sign off on fire safety.")
-    bullets(slide, [
-        "Mission planners scoping Moon and Mars atmospheres.",
-        "Spacecraft engineers selecting materials and systems.",
-        "Graduate students and equipment designers using the export.",
-    ], 0.6, y + 0.1, 6.0, size=14, gap=8, height=1.8)
-    stats = [("11", "curated investigations"), ("7", "atmospheres"),
-             ("7", "scoring factors"), ("21", "eval cases")]
-    for i, (number, label) in enumerate(stats):
-        chip(slide, 0.6 + (i % 2) * 3.05, 4.15 + (i // 2) * 1.25, number, label)
-    panel(slide, 7.0, 1.95, 5.73, 4.35)
-    body_text(slide, "ROADMAP", 7.3, 2.15, 5.1, size=12, color=MUTED, bold=True, height=0.4)
-    bullets(slide, [
-        "Curate ACME, CFI, SPICE, and SLICE next.",
-        "Domain-expert review of scoring weights.",
-        "Demo deployment; growing eval set with every release.",
-    ], 7.3, 2.65, 5.1, size=14, gap=10, height=3.4)
-
-
 TEAM = [
     ("Clinton Otieno", "xtremeart.netlify.app"),
     ("Odinga Valery", "portfolio-odinga-valery.vercel.app"),
@@ -385,32 +339,46 @@ TEAM = [
 
 
 def member_row(slide, left: float, top: float, name: str, url: str) -> None:
-    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(5.6), Inches(0.85))
+    box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(5.6), Inches(0.7))
     tf = box.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
     r = p.add_run()
     r.text = name
-    r.font.size = Pt(17)
+    r.font.size = Pt(15)
     r.font.bold = True
     r.font.name = SANS
     r.font.color.rgb = INK
     p = tf.add_paragraph()
     r = p.add_run()
     r.text = url
-    r.font.size = Pt(13)
+    r.font.size = Pt(12)
     r.font.name = SANS
     r.font.color.rgb = LINK
     r.font.underline = True
     r.hyperlink.address = "https://" + url
 
 
-def s10_team(prs: Presentation) -> None:
-    slide = base_slide(prs, 10)
-    heading(slide, "Team", "Team FlameLab — thank you.")
+def s07_team(prs: Presentation) -> None:
+    slide = base_slide(prs, 7)
+    heading(slide, "Team & next", "Team FlameLab — thank you.")
     for i, (name, url) in enumerate(TEAM):
-        member_row(slide, 0.6 + (i // 3) * 6.3, 2.3 + (i % 3) * 1.0, name, url)
-    box = slide.shapes.add_textbox(MARGIN, Inches(5.9), CONTENT_W, Inches(0.7))
+        member_row(slide, 0.6 + (i // 3) * 6.3, 2.0 + (i % 3) * 0.75, name, url)
+    stats = [("11", "curated investigations"), ("7", "atmospheres"),
+             ("7", "scoring factors"), ("21", "eval cases")]
+    for i, (number, label) in enumerate(stats):
+        chip(slide, 0.6 + i * 3.05, 4.4, number, label)
+    box = slide.shapes.add_textbox(MARGIN, Inches(5.65), CONTENT_W, Inches(0.4))
+    tf = box.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.CENTER
+    r = p.add_run()
+    r.text = "Next: ACME · CFI · SPICE · SLICE records, expert weight review, demo deployment."
+    r.font.size = Pt(12)
+    r.font.name = SANS
+    r.font.color.rgb = MUTED
+    box = slide.shapes.add_textbox(MARGIN, Inches(6.05), CONTENT_W, Inches(0.6))
     tf = box.text_frame
     tf.word_wrap = True
     p = tf.paragraphs[0]
@@ -426,15 +394,15 @@ def s10_team(prs: Presentation) -> None:
 def main() -> None:
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else OUT
     for name in ("rank.png", "live-detail.png", "live-ask.png", "conditions.png",
-                 "radar.png", "gaps.png"):
+                 "radar.png"):
         if not (SHOTS / name).exists():
             raise SystemExit(f"missing shot: {SHOTS / name}")
     prs = Presentation()
     prs.slide_width = SW
     prs.slide_height = SH
     for i, build in enumerate(
-        [s01_title, s02_problem, s03_solution, s04_demo_rank, s05_demo_evidence,
-         s06_trust, s07_visuals, s08_safety, s09_impact, s10_team], start=1):
+        [s01_title, s02_problem, s03_solution, s04_demo, s05_trust,
+         s06_visuals, s07_team], start=1):
         build(prs)
         if len(prs.slides) != i:
             raise AssertionError(f"slide {i} did not append exactly once")
