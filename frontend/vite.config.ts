@@ -1,6 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,9 +13,9 @@ export default defineConfig({
       "/api": `http://localhost:${process.env.FLAMELAB_API_PORT ?? 8000}`,
     },
   },
-  build: {
-    rolldownOptions: {
-      external: ['@fontsource/lato/400.css', '@fontsource/lato/700.css'],
-    },
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
 });
