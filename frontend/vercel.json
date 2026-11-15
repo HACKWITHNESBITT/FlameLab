@@ -1,6 +1,5 @@
 {
-  "src": "/.*",
-  "dest": "/index.html",
-  "status": 200,
-  "headers": []
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html", "status": 200 }
+  ]
 }
