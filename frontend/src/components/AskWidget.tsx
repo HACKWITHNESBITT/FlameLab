@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import botUrl from "../assets/bot.jpeg";
 import { api, apiPost } from "../api/client";
 import type { AskResult, Environment } from "../api/types";
 import { ApiError } from "../api/types";
@@ -49,7 +50,8 @@ export function AskWidget() {
     <>
       <button
         type="button"
-        className="btn btn-primary fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center p-0"
+        className="fixed right-5 bottom-5 z-50 flex h-[60px] w-[60px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 hover:brightness-110"
+        style={{ borderColor: "var(--color-signal)", backgroundColor: "var(--color-panel)", color: "var(--color-signal)" }}
         aria-expanded={open}
         aria-controls="ask-chat"
         aria-label={open ? "Close ask chat" : "Open ask chat"}
@@ -59,7 +61,7 @@ export function AskWidget() {
           setOpen((o) => !o);
         }}
       >
-        {open ? <CloseIcon /> : <ChatIcon />}
+        {open ? <CloseIcon /> : <img src={botUrl} alt="" aria-hidden="true" className="h-full w-full scale-110 object-cover" />}
       </button>
       {everOpen && (
         <div className={open ? "contents" : "hidden"}>
@@ -297,18 +299,6 @@ function Message({ msg, onRetry }: { msg: ChatMsg; onRetry: () => void }) {
 
 function timeOf(ts: number): string {
   return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-function ChatIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth={1.8} strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 5h16v9H9l-5 4V5z" />
-      <circle cx="9" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="12.5" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
-    </svg>
-  );
 }
 
 function CloseIcon() {
