@@ -26,6 +26,7 @@ Operations guide for running, checking and releasing FlameLab. Stack: see `TECHN
 | --- | --- |
 | Run backend tests | `make test` (pytest) |
 | Run frontend tests | `make test-ui` (Vitest) |
+| Run frontend journey tests | `cd frontend && npm run test:e2e` (Playwright; run `npx playwright install` once first) |
 | Validate records against schema | `make validate-records` |
 | Evaluate the SI layer | `make eval-si` |
 | Content audit | `make audit` |

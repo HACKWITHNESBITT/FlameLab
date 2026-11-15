@@ -8,7 +8,7 @@ test:
 	$(PYTHON) -m pytest backend/tests -q
 
 test-ui:
-	@echo "TODO: frontend journey tests" && exit 1
+	cd frontend && npm test
 
 eval-si:
 	$(PYTHON) si/eval/run.py
@@ -26,7 +26,7 @@ run-api:
 	.venv/bin/python -m uvicorn backend.app:app --port 8000
 
 run-ui:
-	@echo "TODO: frontend dev server" && exit 1
+	cd frontend && npm run dev
 
 check-gaps:
 	@for f in docs/API.md docs/DATA_SCHEMA.md docs/INVESTIGATIONS.md docs/RUNBOOK.md docs/SCORING.md docs/SI_GUIDELINES.md docs/BRIEF.md backend/config/environments.yaml backend/config/weights.yaml si/eval/questions.yaml si/prompts/summary.md si/prompts/comparison.md si/prompts/environment.md si/prompts/ask.md; do [ -e "$$f" ] && echo "OK $$f" || { echo "MISSING $$f"; exit 1; }; done
