@@ -22,3 +22,4 @@ EXPOSE 8000
 CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
 REBUILD=1
 REBUILD=1
+FORCE_REBUILD_COMMENT=1794757711
