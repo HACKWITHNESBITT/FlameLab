@@ -1,0 +1,12 @@
+services:
+  - type: python
+    name: flamelab-backend
+    env: python
+    rootDirectory: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      FLAMELAB_SI_LOG:
+        value: si/audit.log
+      FLAMELAB_SCORING_ENABLED:
+        value: "on"
