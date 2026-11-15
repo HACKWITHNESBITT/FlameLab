@@ -36,5 +36,7 @@ npm run lint      # oxlint
 | `#/conditions` | 2 — oxygen vs airflow map with target zones |
 | `#/gaps` | 3 — gaps with bounding records |
 | `#/compare?ids=a,b` | 3 — field comparison + SI commentary + export |
-| `#/ask` | grounded Q&A with explicit not-covered answers |
 | `#/earth` | documented terrestrial applications |
+
+Ask lives in the floating chat widget (bottom-right, every page): history,
+cited answers, explicit not-covered responses, retry, and a persisted thread.
