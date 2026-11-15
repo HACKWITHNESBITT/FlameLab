@@ -18,7 +18,6 @@ import yaml
 from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from backend import scoring, store
 from si import provider as si_provider
