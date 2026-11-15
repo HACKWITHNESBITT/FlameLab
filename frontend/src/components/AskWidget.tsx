@@ -49,16 +49,17 @@ export function AskWidget() {
     <>
       <button
         type="button"
-        className="btn btn-primary fixed right-5 bottom-5 z-50"
+        className="btn btn-primary fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center p-0"
         aria-expanded={open}
         aria-controls="ask-chat"
         aria-label={open ? "Close ask chat" : "Open ask chat"}
+        title={open ? "Close ask chat" : "Open ask chat"}
         onClick={() => {
           setEverOpen(true);
           setOpen((o) => !o);
         }}
       >
-        {open ? "Close" : "Ask"}
+        {open ? <CloseIcon /> : <ChatIcon />}
       </button>
       {everOpen && (
         <div className={open ? "contents" : "hidden"}>
@@ -296,4 +297,26 @@ function Message({ msg, onRetry }: { msg: ChatMsg; onRetry: () => void }) {
 
 function timeOf(ts: number): string {
   return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function ChatIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth={1.8} strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 5h16v9H9l-5 4V5z" />
+      <circle cx="9" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="12.5" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor"
+      strokeWidth={2.2} strokeLinecap="round" aria-hidden="true">
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
+  );
 }
